@@ -1,0 +1,1737 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0052)https://atcsim.nasa.gov/simulator/sim2/sector33.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<title>Sector 33 Classroom Edition, version b3</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sector 33 Classroom edition. Solve air traffic controller problems.">
+    <meta name="author" content="NASA Aeronautics">
+
+    <link rel="shortcut icon" href="https://atcsim.nasa.gov/simulator/sim2/images/SSapp_icon_iPhone57.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="https://atcsim.nasa.gov/simulator/sim2/images/SSapp_icon_iPhone114.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="https://atcsim.nasa.gov/simulator/sim2/images/SSapp_icon_iPhone72.png">
+    <link rel="apple-touch-icon-precomposed" href="https://atcsim.nasa.gov/simulator/sim2/images/SSapp_icon_iPhone57.png">
+	<link href="./kasthuri-sector33_files/jquery-ui.css" rel="stylesheet">
+     <link rel="stylesheet" type="text/css" href="./kasthuri-sector33_files/main.css">
+
+	<script t-pe="text/javascript" id="www-widgetapi-script" src="./kasthuri-sector33_files/www-widgetapi.js" async=""></script><script src="./kasthuri-sector33_files/iframe_api"></script><script src="./kasthuri-sector33_files/jquery-1.10.2.min.js"></script>
+    <script src="./kasthuri-sector33_files/jquery-ui.min.js"></script>
+    <script src="./kasthuri-sector33_files/jquery.ui.touch-punch.min.js"></script>
+    <script src="./kasthuri-sector33_files/jquery.cookie.js"></script>
+    <script src="./kasthuri-sector33_files/jquery.playSound.js"></script>
+    <script src="./kasthuri-sector33_files/jquery.playSound.Safari.js"></script>
+    <script src="./kasthuri-sector33_files/jquery.line.js"></script>
+ 
+    <script src="./kasthuri/-sector33_files/jquery.svg.min.js"></script>
+
+    <script src="./kasthuri-sector33_files/main.js"></script>
+    
+
+<script language="javascript" id="_fed_an_ua_tag" src="./kasthuri-sector33_files/Universal-Federated-Analytics-Min.js"></script><script type="text/javascript" src="./kasthuri-sector33_files/js"></script>
+</head>
+
+<body style="overflow: hidden;">
+
+    <div style="text-align:left;vertical-align:middle;">
+        <a href="http://www.nasa.gov/" target="_blank" "="">
+            <img src="./kasthuri-sector33_files/meatball42.png" alt="NASA Website, meatball image used" name="NASA_Meatball" style="width:100px;height:90px;vertical-align:middle;top:90px" id="NASA_Meatball">
+            </a>
+            <!-- <span style="margin-left:20px;vertical-align:middle;">
+        <strong>Sector 33 Classroom</strong>
+      </span> -->
+      <span class="siteTitle">Smart Skies - LineUp With Math</span>
+      <span id="info" style="color:white;text-align:center;width:400px;height:60px;"></span>
+ 
+  <!-- </div>
+  <div class="collisionError" style="background-color: transparent; color: rgb(0, 0, 255); display: none;">
+  <span class="closeBtn" onclick="this.parentElement.style.display='none';">×</span>
+  <span id="collisionText">Alert: planes too close!<br>Separation less than 2Nmi</span>
+  </div>
+  <div class="spacingError" style="display: none;">
+  <span class="closeBtn" onclick="this.parentElement.style.display='none';">×</span>
+  <span id="spacingText"></span>
+  </div> -->
+  <div class="collisionError red" style="display: none;">
+    <button class="closeBtn red" onclick="this.parentElement.style.display='none';">×</button>
+    <div id="collisionText">Alert: planes too close!<br>Separation less than 2Nmi</div>
+  </div>
+  
+  <div class="spacingError teal" style="display: none;">
+    <button class="closeBtn teal" onclick="this.parentElement.style.display='none';">×</button>
+    <div id="spacingText"></div>
+  </div>
+
+  <div class="content" id="content">
+  <div class="route" id="connector"></div>
+    <img src="./kasthuri-sector33_files/realistic_background.png" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1;">
+    <img src="./images/newbackgroundlayoutcropped1.png" style="margin-top:35px;margin-left:40px;vertical-align:top; border:thick;">
+   	
+    <img id="anchor1" src="./kasthuri-sector33_files/anchorlarge.png" alt="anchor to change route" class="anchor ui-draggable" style="display: none; position: absolute; left: 445px; top: 216px;">
+ 	 <img id="anchor2" src="./kasthuri-sector33_files/anchorlarge.png" alt="anchor to change route" class="anchor ui-draggable" style="display: none; position: absolute; left: 376px; top: 292px;">
+ 	
+    <img id="cloud1" src="./kasthuri-sector33_files/clouds1.png" alt="cloud on route" class="cloud" style="display: none; left: 475px; top: 160px;">
+ 	 <img id="cloud2" src="./kasthuri-sector33_files/clouds1.png" alt="cloud on route" class="cloud" style="display: none;">
+    <img id="lightning1" src="./kasthuri-sector33_files/lightning11.png" alt="lightning on route" class="lightning" style="display: none; opacity: 0.6; z-index: 1; position: absolute; left: 470px; top: 190px;">
+    <img id="lightning2" src="./kasthuri-sector33_files/lightning12.png" alt="lightning on route" class="lightning" style="display: none;">
+     
+    <img id="target1" src="./kasthuri-sector33_files/newtarget.png" alt="newtarget on route" class="target" style="display: block; left: 242px; top: 236px;">
+    <img id="target2" src="./kasthuri-sector33_files/newtarget.png" alt="newtarget on route" class="target" style="display: block; left: 190.01px; top: 236px;">
+    <img id="target3" src="./kasthuri-sector33_files/newtarget.png" alt="newtarget on route" class="target" style="display: none;">
+    <img id="target4" src="./kasthuri-sector33_files/newtarget.png" alt="newtarget on route" class="target" style="display: none;">
+    <img id="target5" src="./kasthuri-sector33_files/newtarget.png" alt="newtarget on route" class="target" style="display: none;">
+
+    <div id="anchorDropZone1" class="anchorDropZone"></div>
+    <div id="anchorDropZone2" class="anchorDropZone"></div>
+    <div id="anchorDropZone3" class="anchorDropZone"></div>
+    <div id="cloudDropZone1" class="cloudDropZone"></div>
+    <div id="cloudDropZone2" class="cloudDropZone"></div>
+    <div id="cloudDropZone3" class="cloudDropZone"></div>
+    <div id="cloudDropZone4" class="cloudDropZone"></div>
+
+	<table id="speedTable"  class="menu" width="80" height="240" border="0" cellspacing="1" cellpadding="1" summary="speed menu">
+   	   <tr width="100%" height="40">
+    	<th id="menuTag">&nbsp;</th>
+ 	  </tr>
+      <tr width="100%">
+        <td id="600"  class="imageSpeedButton" />	
+		 	600 kts
+         </td>
+      </tr>
+      <tr width="100%">
+        <td id="540" class="imageSpeedButton" style="color: rgb(255, 255, 255);">		
+		 	540 kts
+         </td>
+      </tr>
+      <tr width="100%">
+        <td id="480" class="imageSpeedButton" style="color: rgb(255, 255, 255);">		
+		 	480 kts
+         </td>
+      </tr>
+      <tr width="100%">
+        <td id="420" class="imageSpeedButton" style="color: rgb(255, 255, 255);">		
+		 	420 kts
+         </td>
+      </tr>
+      <tr width="100%">
+        <td id="360" class="imageSpeedButton" style="color: rgb(255, 255, 255);">		
+		 	360 kts
+         </td>
+      </tr>
+      <tr width="100%">
+        <td id="300" class="imageSpeedButton" style="color: rgb(255, 255, 255);">		
+		 	300 kts
+         </td>
+      </tr>
+      
+
+	</tbody></table>
+  
+  <!-- <div id="customProblemText" "style="text-align:left;vertical-align:middle;" style="display: none;"> -->
+    <div id="customProblemText" style="text-align:left; vertical-align:middle; display: none;">
+        <span style="margin-left:20px;vertical-align:middle;">
+            <strong>Custom Problem</strong>
+        </span>
+        
+    </div>
+
+  <div class="greenGradient" id="cfooter" style="display: none;">
+  <span style="width:60px;position:fixed;left:1px;">
+  <img id="createBackButton" src="./kasthuri-sector33_files/S33CE-backbutton.png" alt="back to solve" class="imageButton" onclick="backFromCreateMode();">
+  </span>
+  <span style="width:120px;position:fixed;left:120px;">
+  <img id="problemButton" src="./kasthuri-sector33_files/bluebutton.png" alt="modify a problem" style="width:140px;height:80px;top:-6px;position:absolute;top:90%" onclick="selectProblem(true);">
+  <span id="cproblemSpan" onclick="selectProblem(true);" onselectstart="function(){ return false;}" class="buttonText" style="width:140px;text-align:center;color:white;left:1px;top:90%;">Modify a <br>Problem
+  </span>
+  </span>
+  
+  <span style="width:60px;position:fixed;left:760px;">
+  <img id="createReloadButton" src="./kasthuri-sector33_files/ssapp_reset_icon.png" alt="create mode Reload problem" class="imageButton" onclick="reloadCreateMode();">
+  </span>
+  <span style="width:60px;position:fixed;left:850px;">
+  <img id="createCreateButton" src="./kasthuri-sector33_files/S33-CE-solve-button1.png" alt="create mode Create problem" class="imageButton" style="margin-top:-2px;" onclick="solve();">
+  </span>
+  </div>
+
+    <!-- <div class="silverGradient" id="footer" style="background-image: url(&quot;images/S33-CE-silver-menu-solve.png&quot;);">
+      <span style="width:100px;position:fixed;left:20px;">
+        <img id="problemButton" 
+             src="./kasthuri-sector33_files/bluebutton.png" 
+             alt="select problem" 
+             style="
+                width:100px;
+                height:60px;
+                position:absolute;
+                bottom: -40px
+            "
+             onclick="selectProblem(false);">
+        <span id="problemSpan" onclick="selectProblem(false);" onselectstart="function(){ return false;}" class="buttonText" style="color:white;left:1px;top:91%;">2-1</span>
+       </span>
+      <span style="width:60px;position:fixed;left:110px;top:91.45%">
+        <img id="playButton" 
+             src="./kasthuri-sector33_files/ssapp_play_icon2.png" 
+             alt="play game" 
+             class="imageButton" 
+             onclick="play()"
+             style="width: 78px; height: auto; object-fit: contain;">
+        </span>
+      <span style="width:60px;position:fixed;left:180px;top:91%">
+        <img id="changeSpeedButton" 
+             src="./kasthuri-sector33_files/ssapp_1x.png" 
+             alt="change speed" 
+             class="imageButton" 
+             onclick="changeSpeed()"
+             style="width: 90px; height: auto; object-fit: contain;">
+        </span>
+
+      <span style="width:60px;position:fixed;left:270px;top:auto;bottom:77px;;">
+        <span id="incrementalTime" class="counterText" style="left: 1px; top: 20px;">0:00</span>
+       </span>
+      <span style="width:240px;position:fixed;left:360px;bottom:73px">
+         <div id="progressbar" style="height:7px;width:140px;color:green;background:gray;position:absolute;top:25px;left:1px;" class="ui-progressbar ui-widget ui-widget-content ui-corner-all" role="progressbar" aria-valuemin="0" aria-valuemax="198" aria-valuenow="0"><div class="ui-progressbar-value ui-widget-header ui-corner-left" style="display: none; width: 0%;"></div></div>
+         <div id="stepper" style="position: absolute; left: 15px; width: 320px; display: none;">
+         <span id="minusButton" class="buttonInc">Rev</span>
+         <span id="plusButton" class="buttonInc" style="left:55px;">Fwd</span>
+         </div>
+       </span>
+      <span style="width:60px;position:fixed;left:490px;bottom:77px">
+        <span id="totalTime" class="counterText">3:18</span>
+       </span>
+      <span style="width:60px;position:fixed;left:560px;top:92%">
+        <img id="reloadButton" src="./kasthuri-sector33_files/ssapp_reset_icon.png" alt="reload problem" class="imageButton" onclick="reload();">
+        </span>
+      <span style="width:100px;position:fixed;left:640px;top:91.5%">
+        <img id="soundButton" src="./kasthuri-sector33_files/ssapp_mute_icon.png" alt="play problem sound" class="imageButton" onclick="sound(true);">
+        </span>
+      <span style="width:60px;position:fixed;left:720px;">
+        <img id="reviewButton" src="./kasthuri-sector33_files/S33-CE-review-button.png" alt="review problem" class="imageButton" style="margin-top: -2px; opacity: 0.6;" onclick="review();">
+      </span>
+      <span style="width:60px;position:fixed;left:800px;">
+        <img id="createButton" src="./kasthuri-sector33_files/S33-CE-create-button.png" alt="create problem" class="imageButton" style="margin-top:-2px;" onclick="create();">
+      </span>
+      <span style="width:60px;position:fixed;left:880px;">
+        <img id="helpButton" src="./kasthuri-sector33_files/S33-CE-help-button.png" alt="help on problem" class="imageButton" onclick="extras();">
+        </span>
+        
+   </div> -->
+   <!-- Fixed footer bar -->
+<div id="footerBar" style="
+  position: fixed;
+  bottom: 30px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  z-index: 999;
+">
+
+  <!-- Problem button -->
+  <div style="
+  position: relative;
+  width: 90px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  ">
+  
+  <img id="problemButton"
+       src="./kasthuri-sector33_files/bluebutton.png"
+       alt="select problem"
+       onclick="selectProblem(false);"
+       style="width: 100%; height: 100%; object-fit: contain;" />
+  <span id="problemSpan"
+        onclick="selectProblem(false);"
+        style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: white;
+          font-weight: bold;
+          pointer-events: none;
+        ">
+    2-1
+  </span>
+</div>
+  <!-- Play button -->
+  <img id="playButton"
+       src="./kasthuri-sector33_files/ssapp_play_icon2.png"
+       alt="play"
+       onclick="play();"
+       style="width: 78px; height: 60px; object-fit: contain;" />
+
+  <!-- Speed button -->
+  <img id="changeSpeedButton"
+       src="./kasthuri-sector33_files/ssapp_1x.png"
+       alt="change speed"
+       onclick="changeSpeed();"
+       style="width: 90px; height: 60px; object-fit: contain;" />
+
+  <!-- Timer -->
+  <span id="incrementalTime"
+        style="color: white; font-size: 16px; margin: 0 10px;">0:00</span>
+
+  <!-- Progress bar -->
+  <div style="width: 140px; height: 7px; background: gray;">
+    <div id="progressbar" style="width: 0%; height: 100%; background: green;"></div>
+  </div>
+
+  <!-- Total time -->
+  <span id="totalTime"
+        style="color: white; font-size: 16px; margin: 0 10px;">3:18</span>
+
+  <!-- Reload -->
+  <img id="reloadButton"
+       src="./kasthuri-sector33_files/ssapp_reset_icon.png"
+       alt="reload"
+       onclick="reload();"
+       style="width: 60px; height: 60px;" />
+
+  <!-- Sound -->
+  <!-- <img id="soundButton"
+       src="./kasthuri-sector33_files/ssapp_mute_icon.png"
+       alt="sound"
+       onclick="sound(true);"
+       style="width: 60px; height: 60px;" /> -->
+
+  <!-- Review -->
+  <img id="reviewButton"
+       src="./kasthuri-sector33_files/S33-CE-review-button.png"
+       alt="review"
+       onclick="review();"
+       style="width: 90px; height: 60px; opacity: 0.6;" />
+
+  <!-- Create -->
+  <img id="createButton"
+       src="./kasthuri-sector33_files/S33-CE-create-button.png"
+       alt="create"
+       onclick="create();"
+       style="width: 90px; height: 60px;" />
+
+  <!-- Help -->
+  <img id="helpButton"
+       src="./kasthuri-sector33_files/S33-CE-help-button.png"
+       alt="help"
+       onclick="extras();"
+       style="width: 60px; height: 60px;" />
+</div>
+
+
+<img id="cyan" class="plane" src="./kasthuri-sector33_files/cyanplane.png" style="position: absolute; width: 40px; height: 40px; z-index: 9999; top: 61px; left: 716px; visibility: visible;"><div class="dataTag ui-draggable" id="cyantag" style="background-color: black; color: cyan; border-color: cyan; position: absolute; z-index: 2; top: 11.094px; left: 646.198px; visibility: visible;">AAL12<br><span id="speedSpan">600 kts</span></div><img id="limegreen" class="plane" src="./kasthuri-sector33_files/limegreenplane.png" style="position: absolute; width: 40px; height: 40px; z-index: 2; top: 226px; left: 802.68px; visibility: visible;"><div class="dataTag ui-draggable" id="limegreentag" style="background-color: black; color: limegreen; border-color: limegreen; position: absolute; z-index: 2; top: 176px; left: 732.68px; visibility: visible;">DAL88<br><span id="speedSpan">600 kts</span></div></div>
+    <!-- <div class="planeBlock">
+        <img id="cyan" class="plane" src="./kasthuri-sector33_files/cyanplane.png"
+            style="position: absolute; width: 40px; height: 40px; z-index: 9999; top: 61px; left: 716px; visibility: visible;">
+        <div class="dataTag ui-draggable" id="cyantag"
+            style="background-color: #03002E; color: cyan; border-color: cyan; position: absolute; z-index: 1; top: 11.094px; left: 646.198px; visibility: visible;">
+        AAL12<br><span id="speedSpan">600 kts</span>
+        </div>
+    </div>
+    
+    <div class="planeBlock">
+        <img id="limegreen" class="plane" src="./kasthuri-sector33_files/limegreenplane.png"
+            style="position: absolute; width: 40px; height: 40px; z-index: 2; top: 226px; left: 802.68px; visibility: visible;">
+        <div class="dataTag ui-draggable" id="limegreentag"
+            style="background-color: #03002E; color: limegreen; border-color: limegreen; position: absolute; z-index: 1; top: 176px; left: 732.68px; visibility: visible;">
+        DAL88<br><span id="speedSpan">600 kts</span>
+        </div>
+    </div> -->
+
+<div id="extras" class="help" style="display: none;">
+   <span style="width:60px;position:fixed;top:10px;left:1px;">
+ 	<img id="backButton" src="./kasthuri-sector33_files/S33CE-backbutton.png" alt="close help on problem" class="imageButton" onclick="extras();">
+   </span>
+            <span class="helpMenuText" style="text-align:center;margin-left:40%;">      
+	 		Help and Extras
+          </span>
+
+  	<table id="extrasTable" style="margin-top:40px;width:100%;" border="0" cellspacing="0" cellpadding="0">
+      <tbody><tr class="blueGradient" width="100%" onclick="selectExtra(1);">
+        <td width="10%" style="text-align:center;">		
+			<img src="./kasthuri-sector33_files/introicon.png" alt="intro" class="imageButton" style="width:100px;height:62px;vertical-align:middle;position:relative;float:left;display:block;margin-left:20px;"> 
+            </td>
+            <td>
+          <span class="helpMenuText">      
+	 		Introduction
+          </span>
+        </td>
+      </tr>
+      <tr class="blueGradient" onclick="selectExtra(2);">
+        <td width="10%" style="text-align:center;">		
+			<img src="./kasthuri-sector33_files/helpicon.png" alt="intro" class="imageButton" style="width:100px;height:62px;vertical-align:middle;position:relative;float:left;display:block;margin-left:20px;">
+            </td>
+            <td>       
+          <span class="helpMenuText">      
+	 		Help
+          </span>
+        </td>
+      </tr>
+      <tr class="blueGradient" onclick="selectExtra(3);">
+        <td width="10%" style="text-align:center;">		
+			<img src="./kasthuri-sector33_files/blueplay.png" alt="intro" class="imageButton" style="width:60px;height:60px;vertical-align:middle;position:relative;float:left;display:block;margin-left:40px;"> 
+            </td>
+            <td>      
+          <span class="helpMenuText">      
+	 		Welcome to Sector 33
+          </span>
+        </td>
+      </tr>
+      <tr class="blueGradient" onclick="selectExtra(4);">
+        <td width="10%" style="text-align:center;">		
+				<img src="./kasthuri-sector33_files/blueplay.png" alt="intro" class="imageButton" style="width:60px;height:60px;vertical-align:middle;position:relative;float:left;display:block;margin-left:40px;">       
+             </td>
+            <td>      
+        <span class="helpMenuText">      
+	 		24 Hours of Air Traffic across the World
+          </span>
+        </td>
+      </tr>
+      <tr class="blueGradient" onclick="selectExtra(5);">
+        <td width="10%" style="text-align:center;">		
+			<img src="./kasthuri-sector33_files/blueplay.png" alt="intro" class="imageButton" style="width:60px;height:60px;vertical-align:middle;position:relative;float:left;display:block;margin-left:40px;">       
+            </td>
+            <td>      
+         <span class="helpMenuText">      
+	 		24 Hours of Air Traffic in the US
+          </span>
+        </td>
+      </tr>
+      <tr class="blueGradient" onclick="selectExtra(6);">
+        <td width="10%" style="text-align:center;">		
+			<img src="./kasthuri-sector33_files/blueplay.png" alt="intro" class="imageButton" style="width:60px;height:60px;vertical-align:middle;position:relative;float:left;display:block;margin-left:40px;">       
+           </td>
+            <td>      
+          <span class="helpMenuText">      
+	 		I'm an Air Traffic Controller
+          </span>
+        </td>
+      </tr>
+   	</tbody></table>
+ 
+ </div>
+ 
+ 
+ <div id="problems" class="help" style="display: none; z-index: -1;">
+   <span style="width:60px;position:fixed;top:10px;left:1px;">
+ 	<img id="backButton" src="./kasthuri-sector33_files/S33CE-backbutton.png" alt="close help on problem" class="imageButton" onclick="selectProblem();">
+   </span>
+ 	<table style="margin-left:100px;" width="600" border="0" cellspacing="1" cellpadding="10" summary="problem selection">
+      <tbody><tr width="200px">
+        <th scope="col">
+			<img id="twoproblem" src="./kasthuri-sector33_files/S33CE-L2selected.png" alt="selection problem section 2" class="imageSelectionButton" onclick="selectSection(2);">       
+        </th>
+        <th scope="col">
+ 			<img id="threeproblem" src="./kasthuri-sector33_files/S33CE-L3inactive.png" alt="selection problem section 3" class="imageSelectionButton" onclick="selectSection(3);">       
+       </th>
+        <th scope="col">
+			<img id="fourproblem" src="./kasthuri-sector33_files/S33CE-L4inactive.png" alt="selection problem section 4" class="imageSelectionButton" onclick="selectSection(4);">       
+        </th>
+        <th scope="col">
+			<img id="fiveproblem" src="./kasthuri-sector33_files/S33CE-L5inactive.png" alt="selection problem section 5" class="imageSelectionButton" onclick="selectSection(5);">       
+        </th>
+      </tr>
+     </tbody></table>
+ 	<table id="problemsTable" style="margin-left:100px;" width="700" border="0" cellspacing="1" cellpadding="1" summary="problem selection">
+      <tbody><tr class="row2" width="50%" style="display: table-row;">
+        <td id="2td1" 
+            width="180" 
+            height="90" 
+            class="imageProblemButton" 
+            style="background-image: url(&quot;images/S33CE-ProbSelected.png&quot;);">		
+		 	Problem 2-1
+         </td>
+         <td id="2td5" width="180" height="90" class="imageProblemButton">		
+		 	Problem 2-5
+         </td>
+         <td id="2td9" width="180" height="90" class="imageProblemButton">
+         Problem 2-9
+         </td>
+      </tr>
+      <tr class="row2" width="180" style="display: table-row;">
+        <td id="2td2" width="180" height="90" class="imageProblemButton" style="background-image: url(&quot;images/S33CE-ProbInactive.png&quot;);">		
+		 	Problem 2-2
+         </td>
+         <td id="2td6" width="180" height="90" class="imageProblemButton" style="background-image: url(&quot;images/S33CE-ProbInactive.png&quot;);">		
+		 	Problem 2-6
+         </td>
+         <td id="2td10" width="180" height="90" class="imageProblemButton">
+         Problem 2-10
+         </td>
+       </tr>
+      <tr class="row2" width="180" style="display: table-row;">
+        <td id="2td3" width="180" height="90" class="imageProblemButton">		
+		 	Problem 2-3
+         </td>
+         <td id="2td7" width="180" height="90" class="imageProblemButton">		
+		 	Problem 2-7
+         </td>
+         <td id="2td11" width="180" height="90" class="imageProblemButton">
+         Problem 2-11
+         </td>
+      </tr>
+      <tr class="row2" width="180" style="display: table-row;">
+        <td id="2td4" width="180" height="90" class="imageProblemButton">		
+		 	Problem 2-4
+         </td>
+         <td id="2td8" width="180" height="90" class="imageProblemButton">		
+		 	Problem 2-8
+         </td>
+         <td id="2td12" width="180" height="90" class="imageProblemButton">
+         Problem 2-12
+         </td>
+      </tr>
+ 
+      <tr class="row3" width="180" style="display: none;">
+        <td id="3td1" width="180" height="90" class="imageProblemButton">		
+		 	Problem 3-1
+         </td>
+         <td id="3td5" width="180" height="90" class="imageProblemButton">		
+		 	Problem 3-5
+         </td>
+         <td id="3td9" width="180" height="90" class="imageProblemButton">		
+		 	Problem 3-9
+         </td>
+         <td id="3td13" width="180" height="90" class="imageProblemButton">
+         Problem 3-13
+         </td>
+       </tr>
+      <tr class="row3" width="180" style="display: none;">
+        <td id="3td2" width="180" height="90" class="imageProblemButton">		
+		 	Problem 3-2
+         </td>
+      <td id="3td6" width="180" height="90" class="imageProblemButton">		
+		 	Problem 3-6
+         </td>
+         <td id="3td10" width="180" height="90" class="imageProblemButton">		
+		 	Problem 3-10
+         </td>
+      </tr>
+      <tr class="row3" width="180" style="display: none;">
+      <td id="3td3" width="180" height="90" class="imageProblemButton">		
+		 	Problem 3-3
+         </td>
+      <td id="3td7" width="180" height="90" class="imageProblemButton">		
+		 	Problem 3-7
+         </td>
+         <td id="3td11" width="180" height="90" class="imageProblemButton">
+         Problem 3-11
+         </td>
+      </tr>
+      <tr class="row3" width="180" style="display: none;">
+      <td id="3td4" width="180" height="90" class="imageProblemButton">		
+		 	Problem 3-4
+         </td>
+      <td id="3td8" width="180" height="90" class="imageProblemButton">		
+		 	Problem 3-8
+         </td>
+         <td id="3td12" width="180" height="90" class="imageProblemButton">
+         Problem 3-12
+         </td>
+      </tr>
+
+	      <tr class="row4" width="180" style="display: none;">
+        <td id="4td1" width="180" height="90" class="imageProblemButton">		
+		 	Problem 4-1
+         </td>
+         <td id="4td5" width="180" height="90" class="imageProblemButton">		
+		 	Problem 4-5
+         </td>
+         <td id="4td9" width="180" height="90" class="imageProblemButton">
+		 	Problem 4-9
+         </td>
+       </tr>
+      <tr class="row4" width="180" style="display: none;">
+        <td id="4td2" width="180" height="90" class="imageProblemButton">		
+		 	Problem 4-2
+         </td>
+      <td id="4td6" width="180" height="90" class="imageProblemButton">		
+		 	Problem 4-6
+         </td>
+       </tr>
+      <tr class="row4" width="180" style="display: none;">
+      <td id="4td3" width="180" height="90" class="imageProblemButton">		
+		 	Problem 4-3
+         </td>
+      <td id="4td7" width="180" height="90" class="imageProblemButton">		
+		 	Problem 4-7
+         </td>
+      </tr>
+      <tr class="row4" width="180" style="display: none;">
+      <td id="4td4" width="180" height="90" class="imageProblemButton">		
+		 	Problem 4-4
+         </td>
+      <td id="4td8" width="180" height="90" class="imageProblemButton">		
+		 	Problem 4-8
+         </td>
+      </tr>
+
+	
+      <tr class="row5" width="180" style="display: none;">
+        <td id="5td1" width="180" height="90" class="imageProblemButton">		
+		 	Problem 5-1
+         </td>
+         <td id="5td5" width="180" height="90" class="imageProblemButton">		
+		 	Problem 5-5
+         </td>
+       </tr>
+      <tr class="row5" width="180" style="display: none;">
+        <td id="5td2" width="180" height="90" class="imageProblemButton">		
+		 	Problem 5-2
+         </td>
+      <td id="5td6" width="180" height="90" class="imageProblemButton">		
+		 	Problem 5-6
+         </td>
+       </tr>
+      <tr class="row5" width="180" style="display: none;">
+      <td id="5td3" width="180" height="90" class="imageProblemButton">		
+		 	Problem 5-3
+         </td>
+      <td id="5td7" width="180" height="90" class="imageProblemButton">		
+		 	Problem 5-7
+         </td>
+      </tr>
+      <tr class="row5" width="180" style="display: none;">
+      <td id="5td4" width="180" height="90" class="imageProblemButton">		
+		 	Problem 5-4
+         </td>
+      <td id="5td8" width="180" height="90" class="imageProblemButton">		
+		 	Problem 5-8
+         </td>
+      </tr>
+
+	
+	</tbody></table>
+ </div>
+ <div style="display:none;">
+ 
+ <script> isMuted=true;</script>
+ 
+ <script> isMuted=false;</script>
+
+ </div>
+
+<div style="display:none;">
+
+
+<div id="2-1">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>2 planes</problemtype> <targetsolutiontime>3:18</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>4.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+    </problem>
+    </smartskiesproblemsettingsdatadocument>
+</div>
+
+<div id="2-2">
+
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>2 planes</problemtype> <targetsolutiontime>3:48</targetsolutiontime> <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+    </problem>
+    </smartskiesproblemsettingsdatadocument>
+</div>
+<div id="2-3">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>2 planes</problemtype> <targetsolutiontime>3:30</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>5.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="2-4">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>2 planes</problemtype> <targetsolutiontime>3:18</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>9</segmentid>
+        </stormcloud>
+        <stormcloud>
+            <segmentid>10</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="2-5">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>2 planes</problemtype> <targetsolutiontime>2:18</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>17.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>17.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>9</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="2-6">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>2 planes</problemtype> <targetsolutiontime>3:18</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>6.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>9</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="2-7">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>2 planes</problemtype> <targetsolutiontime>3:06</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>12.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>12.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>7</segmentid>
+        </stormcloud>
+        <stormcloud>
+            <segmentid>8</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument>
+</div>
+<div id="2-8">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>2 planes</problemtype> <targetsolutiontime>2:18</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>16.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>17.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>10</segmentid>
+        </stormcloud>
+        <stormcloud>
+            <segmentid>9</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="2-9">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>2 planes</problemtype> <targetsolutiontime>3:30</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>5.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="2-10">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>2 planes</problemtype> <targetsolutiontime>3:36</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>3.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>7</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="2-11">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>2 planes</problemtype> <targetsolutiontime>3:48</targetsolutiontime> <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>10</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="2-12">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>2 planes</problemtype> <targetsolutiontime>3:18</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>6.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>10</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="3-1">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>3 planes</problemtype> <targetsolutiontime>3:36</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>1.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="3-2">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>3 planes</problemtype> <targetsolutiontime>3:48</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>5.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="3-3">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>3 planes</problemtype> <targetsolutiontime>3:36</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>3.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>6.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>9</segmentid>
+        </stormcloud>
+        <stormcloud>
+            <segmentid>10</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="3-4">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>3 planes</problemtype> <targetsolutiontime>3:36</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>3.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>5.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>9</segmentid>
+        </stormcloud>
+        <stormcloud>
+            <segmentid>10</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="3-5">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>3 planes</problemtype> <targetsolutiontime>3:36</targetsolutiontime> <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>10.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>6.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>9</segmentid>
+        </stormcloud>
+        <stormcloud>
+            <segmentid>8</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument>
+</div>
+<div id="3-6">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>3 planes</problemtype> <targetsolutiontime>3:36</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>4.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>6.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>7</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="3-7">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>3 planes</problemtype> <targetsolutiontime>3:36</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>4.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>4.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+    </problem>
+    </smartskiesproblemsettingsdatadocument>
+</div>
+<div id="3-8">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>3 planes</problemtype> <targetsolutiontime>3:48</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>5.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>10</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="3-9">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>3 planes</problemtype> <targetsolutiontime>3:54</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>0.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>7</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="3-10">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>3 planes</problemtype> <targetsolutiontime>3:06</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>12.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>11.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>SWA23</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>6.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="3-11">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>3 planes</problemtype> <targetsolutiontime>4:06</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>5.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>2.0</distancefromsegmentstart> <plannedroutechoice>1</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>7</segmentid>
+        </stormcloud>
+        <stormcloud>
+            <segmentid>10</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="3-12">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>3 planes</problemtype> <targetsolutiontime>3:36</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>3.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>4.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+    </problem>
+    </smartskiesproblemsettingsdatadocument></div>
+<div id="3-13">
+    <!--?xml version="1.0" encoding="UTF-8"?-->
+    <smartskiesproblemsettingsdatadocument> <problem>
+        <sectorchoice>Sector 33</sectorchoice> <problemtype>3 planes</problemtype> <targetsolutiontime>3:36</targetsolutiontime> <airplane>
+            <callsign>AAL12</callsign> <segmentchoice>0</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>DAL88</callsign> <segmentchoice>2</segmentchoice> <distancefromsegmentstart>7.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <airplane>
+            <callsign>UAL74</callsign> <segmentchoice>3</segmentchoice> <distancefromsegmentstart>10.0</distancefromsegmentstart> <plannedroutechoice>0</plannedroutechoice> <speed>600.0</speed>
+        </airplane>
+        <stormcloud>
+            <segmentid>9</segmentid>
+        </stormcloud>
+        <stormcloud>
+            <segmentid>8</segmentid>
+        </stormcloud>
+    </problem>
+    </smartskiesproblemsettingsdatadocument>
+    </div>
+<div id="4-1">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>4 planes</problemtype>
+<targetsolutiontime>3:42</targetsolutiontime>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>9.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>3.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>8.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>3.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="4-2">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>4 planes</problemtype>
+<targetsolutiontime>3:42</targetsolutiontime>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>3.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>8.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>3.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>VRD36</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>9.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="4-3">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>4 planes</problemtype>
+<targetsolutiontime>3:54</targetsolutiontime>
+<availablefordemo></availablefordemo>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>7.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>5.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>4.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>0.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<stormcloud>
+<segmentid>10</segmentid>
+</stormcloud>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="4-4">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>4 planes</problemtype>
+<targetsolutiontime>3:54</targetsolutiontime>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>7.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>1.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>4.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>540.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>1.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<stormcloud>
+<segmentid>10</segmentid>
+</stormcloud>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="4-5">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>4 planes</problemtype>
+<targetsolutiontime>3:54</targetsolutiontime>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>7.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>5.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>7.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>7.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="4-6">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>4 planes</problemtype>
+<targetsolutiontime>3:36</targetsolutiontime>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>8.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>5.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>10.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>2.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<stormcloud>
+<segmentid>9</segmentid>
+</stormcloud>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="4-7">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>4 planes</problemtype>
+<targetsolutiontime>3:36</targetsolutiontime>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>8.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>540.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>5.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>10.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>5.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<stormcloud>
+<segmentid>10</segmentid>
+</stormcloud>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="4-8">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>4 planes</problemtype>
+<targetsolutiontime>4:12</targetsolutiontime>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>7.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>4.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>5.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>0.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<stormcloud>
+<segmentid>10</segmentid>
+</stormcloud>
+<stormcloud>
+<segmentid>7</segmentid>
+</stormcloud>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="4-9">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>4 planes</problemtype>
+<targetsolutiontime>3:42</targetsolutiontime>
+<airplane>
+<callsign>VRD36</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>9.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>8.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>3.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>6.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="5-1">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>5 planes</problemtype>
+<targetsolutiontime>3:36</targetsolutiontime>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>10.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>6.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>8.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>4.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>VRD36</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>13.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<stormcloud>
+<segmentid>10</segmentid>
+</stormcloud>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="5-2">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>5 planes</problemtype>
+<targetsolutiontime>3:42</targetsolutiontime>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>12.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>12.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>1.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>8.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>VRD36</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>8.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<stormcloud>
+<segmentid>10</segmentid>
+</stormcloud>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="5-3">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>5 planes</problemtype>
+<targetsolutiontime>3:36</targetsolutiontime>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>13.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>5.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>8.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>9.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>540.0</speed>
+</airplane>
+<airplane>
+<callsign>VRD36</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>10.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<stormcloud>
+<segmentid>9</segmentid>
+</stormcloud>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="5-4">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>5 planes</problemtype>
+<targetsolutiontime>3:42</targetsolutiontime>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>12.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>540.0</speed>
+</airplane>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>1.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>8.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>3.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>VRD36</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>9.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<stormcloud>
+<segmentid>9</segmentid>
+</stormcloud>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="5-5">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>5 planes</problemtype>
+<targetsolutiontime>4:12</targetsolutiontime>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>5.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>7.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>7.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>7.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>VRD36</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>1.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<stormcloud>
+<segmentid>10</segmentid>
+</stormcloud>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="5-6">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>5 planes</problemtype>
+<targetsolutiontime>4:30</targetsolutiontime>
+<availablefordemo></availablefordemo>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>5.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>4.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>4.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>3.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>VRD36</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>1.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<stormcloud>
+<segmentid>10</segmentid>
+</stormcloud>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="5-7">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>5 planes</problemtype>
+<targetsolutiontime>4:00</targetsolutiontime>
+<availablefordemo></availablefordemo>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>10.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>10.0</distancefromsegmentstart>
+<plannedroutechoice>1</plannedroutechoice>
+<speed>540.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>1.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>3.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>VRD36</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>9.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<stormcloud>
+<segmentid>7</segmentid>
+</stormcloud>
+<stormcloud>
+<segmentid>8</segmentid>
+</stormcloud>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+<div id="5-8">
+<smartskiesproblemsettingsdatadocument>
+<problem>
+<sectorchoice>Sector 33</sectorchoice>
+<problemtype>5 planes</problemtype>
+<targetsolutiontime>4:00</targetsolutiontime>
+<airplane>
+<callsign>SWA23</callsign>
+<segmentchoice>1</segmentchoice>
+<distancefromsegmentstart>0.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>AAL12</callsign>
+<segmentchoice>0</segmentchoice>
+<distancefromsegmentstart>8.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>480.0</speed>
+</airplane>
+<airplane>
+<callsign>UAL74</callsign>
+<segmentchoice>3</segmentchoice>
+<distancefromsegmentstart>0.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>600.0</speed>
+</airplane>
+<airplane>
+<callsign>DAL88</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>3.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>540.0</speed>
+</airplane>
+<airplane>
+<callsign>VRD36</callsign>
+<segmentchoice>2</segmentchoice>
+<distancefromsegmentstart>9.0</distancefromsegmentstart>
+<plannedroutechoice>0</plannedroutechoice>
+<speed>480.0</speed>
+</airplane>
+<stormcloud>
+<segmentid>9</segmentid>
+</stormcloud>
+</problem>
+</smartskiesproblemsettingsdatadocument></div>
+
+
+</div>
+
+<div class="route" id="s1"></div>
+<div class="route" id="s2"></div>
+
+</body>
+</html>
+
