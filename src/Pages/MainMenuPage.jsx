@@ -20,11 +20,15 @@ const MainMenuPage = () => {
     const { contextSafe } = useGSAP(() => {
 
             // Runs when page loads
-            gsap.fromTo(
+        gsap.timeline()
+            .fromTo(
                 ".slide-in",
                 { opacity: 0, y: 50 },
                 { opacity: 1, y: 0, duration: 1, ease: "power2.out"}
-            );
+            )
+            .to( ".subMenu", { autoAlpha: 0, duration: 0},0)
+            .to( ".startSubMenu", { autoAlpha: 0, duration: 0},0)
+
         }, { scope: containerRef });
 
     // Dynamic hover handlers using contextSafe
@@ -49,9 +53,27 @@ const MainMenuPage = () => {
     });
 
     // Buttons handlers when pressed
-    const startPressed = () => {
-        alert("startPressed");
-    }
+    const startPressed = contextSafe((e) => {
+        // alert("startPressed");
+        const start = `.${e[0]}`;
+        const settings = `.${e[1]}`;
+        const extra = `.${e[2]}`;
+        const quit = `.${e[3]}`;
+
+        //Fade out all other icons
+        gsap.timeline()
+            .to(start, { autoAlpha: 0, scale:5, x:200, y:200, duration: 0.5})
+            .to(settings, { autoAlpha: 0, y:100, x:50, duration: 0.2 }, 0)
+            .to(extra, { autoAlpha: 0, y:100, x:50, duration: 0.2 }, 0)
+            .to(quit, { autoAlpha: 0, y:100, x:50, duration: 0.2 }, 0)
+            .to( ".additional" , { autoAlpha: 0, y:100, x:50, duration: 0.2 }, 0)
+
+            .to( ".subMenu" , { autoAlpha: 1, duration: 0 }, 0)
+            .fromTo( ".startSubMenu" ,{ autoAlpha: 0, scale: 0.5, x:-380, y:-320}, { autoAlpha: 1, scale:2, x:0, y:0, duration: 2 }, 0)
+        // Fade in Submenu Start
+
+    })
+
     const optionsPressed = () => {
         alert("optionsPressed");
     }
@@ -62,19 +84,30 @@ const MainMenuPage = () => {
         alert("If in window, close window, if in executable, close app.");
     }
 
-
     // Main Content
     return(
         <div ref={containerRef} className="bg-slate-900"> {/*Background to fade in and container ref*/}
 
+            {/*SubMenu Layer*/}
+            <div className="subMenu absolute inset-0 flex items-center justify-center z-10">
+
+                {/*Start SubMenu*/}
+                <div className="startSubMenu  w-[200px] h-[200px]  text-white">
+                    <div className="w-full h-full">
+                        <PlaneSVG/>
+                    </div>
+                </div>
+
+            </div>
+
         {/*Main Background and layout*/}
-        <div className="flex min-h-screen w-full items-center justify-center bg-slate-900 slide-in">
+        <div className=" flex min-h-screen w-full items-center justify-center bg-slate-900 slide-in">
 
             {/*White block in center, used for centering button elements around*/}
-            <div className=" flex relative w-[10vw] h-[10vh] bg-slate-200 rounded-xl justify-center items-center">
+            <div className="flex relative w-[10vw] h-[10vh] rounded-xl justify-center items-center">
 
                 {/*Image to be implemented*/}
-                {/*<img className="card absolute w-[30vw] h-[20vh] object-contain border border-green-500" src="/assets/images/sector33logo.png" alt="Sector 33 Logo" />*/}
+                <img className="additional card absolute w-[50vw] h-[50vh] object-contain" src="/assets/images/sector33logo.png" alt="Sector 33 Logo" />
 
                 {/*Start Button*/}
                 <div className="absolute text-[#777] flex justify-center items-center startText
@@ -115,7 +148,7 @@ const MainMenuPage = () => {
                     <button
                         onMouseEnter={() => handleMouseEnter(["startText", "planeSVG"])}
                         onMouseLeave={() => handleMouseLeave(["startText", "planeSVG"])}
-                        onClick={() => startPressed()}
+                        onClick={() => startPressed(["startText", "settingsText", "extrasText", "exitText"])}
                         className= "absolute z-20
                         sm:w-25  sm:h-15
                         md:w-32 md:h-18
@@ -269,7 +302,10 @@ const MainMenuPage = () => {
                 </div>
             </div>
         </div>
-</div>
+        </div>
+
+
+
     )};
 
 export default MainMenuPage;
