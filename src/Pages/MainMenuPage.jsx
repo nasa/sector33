@@ -3,7 +3,9 @@ import { ReturnSVG, PlaneSVG, BookSVG, LevelSVG, ExitSVG, SettingsSVG, SoundSVG,
 import { StartBtnSvg, ExtrasBtnSVG, OptionsBtnSVG, BackBtnSVG, QuitBtnSVG } from '../../assets/resources/SVGs.jsx';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import {LEVELS_DATA} from "../levelsData.jsx";
 gsap.registerPlugin(useGSAP);
+
 
 
 // Main Menu to start, quit, options, and extras
@@ -12,22 +14,17 @@ const MainMenuPage = () => {
     // Define Ref and useGSAP at top level of function so all children can access
     const containerRef = useRef(null);
 
-    // use useGSAP when loading page, staging dependencies
-    // use contextSafe when hovering or button clicking
-    // no gsap when clicking buttons
-
     // setup hook and extract contextSafe
     const { contextSafe } = useGSAP(() => {
 
-            // Runs when page loads
+        // Runs when page loads
         gsap.timeline()
             .fromTo(
                 ".slide-in",
                 { opacity: 0, y: 50 },
                 { opacity: 1, y: 0, duration: 1, ease: "power2.out"}
             )
-            .to( ".subMenu", { autoAlpha: 0, duration: 0},0)
-            .to( ".startSubMenu", { autoAlpha: 0, duration: 0},0)
+            .to( [".subMenu", ".levelsMenu" , ".startSubMenu" ], { autoAlpha: 0, duration: 0},0)
 
         }, { scope: containerRef });
 
@@ -54,25 +51,36 @@ const MainMenuPage = () => {
 
     // Buttons handlers when pressed
     const startPressed = contextSafe((e) => {
-        // alert("startPressed");
-        const start = `.${e[0]}`;
-        const settings = `.${e[1]}`;
-        const extra = `.${e[2]}`;
-        const quit = `.${e[3]}`;
-
-        //Fade out all other icons
         gsap.timeline()
-            .to(start, { autoAlpha: 0, scale:5, x:200, y:200, duration: 0.5})
-            .to(settings, { autoAlpha: 0, y:100, x:50, duration: 0.2 }, 0)
-            .to(extra, { autoAlpha: 0, y:100, x:50, duration: 0.2 }, 0)
-            .to(quit, { autoAlpha: 0, y:100, x:50, duration: 0.2 }, 0)
-            .to( ".additional" , { autoAlpha: 0, y:100, x:50, duration: 0.2 }, 0)
+            .to(".additional", { autoAlpha: 0, scale: 0.5, x:0, y:0, duration: 0.1 },0)
+            .to(".mainMenu", { autoAlpha: 0, scale: 5, x:0, y:0, duration: 0.5 },0)
 
-            .to( ".subMenu" , { autoAlpha: 1, duration: 0 }, 0)
-            .fromTo( ".startSubMenu" ,{ autoAlpha: 0, scale: 0.5, x:-380, y:-320}, { autoAlpha: 1, scale:2, x:0, y:0, duration: 2 }, 0)
-        // Fade in Submenu Start
+            .to(".subMenu", { autoAlpha: 1, duration: 0 }, 0)
 
-    })
+            .fromTo(".startSubMenu",
+                { autoAlpha: 0, scale: 0.5, x: 0, y: 0 },
+                { autoAlpha: 1, scale: 1, x: 0, y: 0, duration: 0.75 }, 0
+            );
+    });
+
+    const backPressed = contextSafe((e) => {
+        const menu = `.${e[0]}`; // ".startSubMenu"
+
+        gsap.timeline()
+            // 1. Drop out the open submenu interface
+            .to(menu, { autoAlpha: 0, x:-500, scale: 1, duration: 0.3 })
+            .to(".subMenu", { autoAlpha: 0, duration: 0 })
+
+            // 2. Bring back the main menu wrapper smoothly (Fixes pointer tracking issues)
+            .to([".mainMenu",".additional"], {
+                autoAlpha: 1,
+                scale: 1,
+                x: 0,
+                y: 0,
+                clearProps: "all",
+                duration: 0.5
+            });
+    });
 
     const optionsPressed = () => {
         alert("optionsPressed");
@@ -81,20 +89,155 @@ const MainMenuPage = () => {
         alert("extrasPressed");
     }
     const quitPressed = () => {
-        alert("If in window, close window, if in executable, close app.");
+        // alert("If in window, close window, if in executable, close app.");
+        window.close();
     }
+    const tutorialPressed = () => {
+        alert("START TUTORIAL");
+    }
+
+    const levelsPressed = contextSafe(() => {
+        gsap.timeline()
+            .to(".startSubMenu", { autoAlpha: 0, x:500, scale: 1, duration: 0.5 },0)
+        // Show Levels grid
+            .to(".levelsMenu", { autoAlpha: 1, duration: 0.5 },0)
+    });
+
+
 
     // Main Content
     return(
-        <div ref={containerRef} className="bg-slate-900"> {/*Background to fade in and container ref*/}
+        <div ref={containerRef} className=" h-screen overflow-hidden w-screen relative bg-slate-900"> {/*Background to fade in and container ref*/}
 
-            {/*SubMenu Layer*/}
+            {/*Levels Menu*/}
+            <div className="levelsMenu fixed inset-0 h-screen overflow-hidden flex items-center justify-center z-20">
+                {/* Grid */}
+                <div className="m-5 justify-center grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 w-full max-w-7xl">
+                    {LEVELS_DATA.map((level) => (
+                        <div
+                            key={level.id}
+                            className="text-[#142857] rounded-lg shadow font-semibold text-center"
+                        >
+                            <div
+                                className={`group transition-all duration-300 ease-in-out cursor-pointer hover:shadow-xl hover:-translate-y-1 relative flex h-80 w-full flex-col items-end justify-center overflow-hidden rounded-xl bg-white bg-clip-border text-center text-gray-700 ${level.bgColor} ${level.borderColor}`}
+                            >
+                                <div
+                                    className="absolute inset-0 m-0 h-full w-full overflow-hidden bg-transparent bg-cover bg-center text-gray-700 shadow-none"
+                                    style={{ backgroundImage: `url(${level.image})` }}
+                                >
+                                    <div className="absolute inset-0 w-full h-full bg-linear-to-t from-black/80 via-black/50 to-black/10 flex items-end justify-center p-6">
+                                        <h3 className="text-white text-2xl font-bold font-mono">
+                                            {level.title}
+                                        </h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+
+        {/*SubMenu Layer*/}
             <div className="subMenu absolute inset-0 flex items-center justify-center z-10">
 
                 {/*Start SubMenu*/}
-                <div className="startSubMenu  w-[200px] h-[200px]  text-white">
-                    <div className="w-full h-full">
+                <div className="startSubMenu text-white
+                sm:w-100   sm:h-100
+                md:w-125   md:h-125
+                lg:w-150   lg:h-150
+                xl:w-175   xl:h-175
+                2xl:w-200  2xl:h-200
+                ">
+                    <div className=" flex w-full h-full">
                         <PlaneSVG/>
+                        {/*Back Button*/}
+                        <div className="flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                                    sm:w-18   sm:h-10    sm:mt-15 sm:-ml-1
+                                    md:w-22   md:h-12    md:mt-20.5 md:-ml-1.75
+                                    lg:w-28   lg:h-14    lg:mt-25 lg:-ml-2.25
+                                    xl:w-34   xl:h-17    xl:mt-28 xl:-ml-3
+                                    2xl:w-40   2xl:h-20    2xl:mt-31 2xl:-ml-3
+
+                                    sm:text-md
+                                    md:text-lg
+                                    lg:text-xl
+                                    xl:text-2xl
+                                    2xl:text-4xl
+
+                                    ">
+                            <button className="relative"
+                                    onMouseEnter={() => handleMouseEnter(["backText", "backSVG"])}
+                                    onMouseLeave={() => handleMouseLeave(["backText", "backSVG"])}
+                                    onClick={() => backPressed(["startSubMenu"])}
+                            >
+                                <BackBtnSVG className="text-[#777] backBtn" style={{'--svg-fill': '#3b82f6', '--svg-shadow': '#1e40af'}}> </BackBtnSVG>
+                                <div className="absolute top-0 gap-1 flex items-center w-full h-full text-[#777]
+                                    sm:p-1
+                                    md:p-1.5
+                                    lg:p-2
+                                    xl:p-4
+                                    2xl:p-3
+                                ">
+                                    <ReturnSVG className="text-[#777] backSVG"/>
+                                    <span className="text-[#777] backText">BACK</span>
+
+                                </div>
+                            </button>
+                        </div>
+
+                        <div className="flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            <div className="flex  mb-3 justify-center gap-5
+                            sm:w-67   sm:h-15
+                            md:w-84   md:h-17.5
+                            lg:w-105  lg:h-22.5   lg:pl-5
+                            xl:w-125  xl:h-25     xl:mb-5
+                            2xl:w-140 2xl:h-30    2xl:mb-5
+
+                            sm:text-lg
+                            md:text-2xl
+                            lg:text-3xl
+                            xl:text-4xl
+                            2xl:text-4xl
+                            ">
+                                {/*Rest of Start Menu*/}
+                            <button className="flex items-center w-full h-full bg-slate-900 rounded-md p-2 text-bold font-mono gap-2"
+                                    onMouseEnter={() => handleMouseEnter(["tutorialText", "tutorialSVG"])}
+                                    onMouseLeave={() => handleMouseLeave(["tutorialText", "tutorialSVG"])}
+                                    onClick={() => tutorialPressed()}
+                            >
+                                <div className="
+                                sm:w-10   sm:h-10
+                                md:w-12   md:h-12
+                                lg:w-15   lg:h-15
+                                xl:w-20   xl:h-20
+                                2xl:w-23  2xl:h-23
+                                "
+                                >
+                                    <BookSVG className="text-[#777] tutorialSVG"/>
+                                </div>
+                                <span className="tutorialText text-[#777]"> TUTORIAL</span>
+
+                           </button>
+                                <button className="flex items-center w-full h-full bg-slate-900 rounded-md p-1 text-bold font-mono gap-2"
+                                        onMouseEnter={() => handleMouseEnter(["levelsText", "levelsSVG"])}
+                                        onMouseLeave={() => handleMouseLeave(["levelsText", "levelsSVG"])}
+                                        onClick={() => levelsPressed()}
+                                >
+                                    <div className=" pl-1.5
+                                    sm:w-10   sm:h-10
+                                    md:w-12   md:h-12
+                                    lg:w-15   lg:h-15
+                                    xl:w-20   xl:h-20
+                                    2xl:w-23  2xl:h-23
+                                    ">
+                                        <LevelSVG className="text-[#777] levelsSVG"/>
+                                    </div>
+                                    <span className="levelsText text-[#777]"> LEVELS</span>
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -103,11 +246,23 @@ const MainMenuPage = () => {
         {/*Main Background and layout*/}
         <div className=" flex min-h-screen w-full items-center justify-center bg-slate-900 slide-in">
 
-            {/*White block in center, used for centering button elements around*/}
+            {/*Additional wrapper for main menu*/}
+            <div className="mainMenu absolute inset-0 flex items-center justify-center slide-in">
+
+                {/*White block in center, used for centering button elements around*/}
             <div className="flex relative w-[10vw] h-[10vh] rounded-xl justify-center items-center">
 
-                {/*Image to be implemented*/}
-                <img className="additional card absolute w-[50vw] h-[50vh] object-contain" src="/assets/images/sector33logo.png" alt="Sector 33 Logo" />
+                <div className=" additional card absolute
+                sm:w-40     sm:h-30
+                md:w-50     md:h-37.5
+                lg:w-62.5   lg:h-47
+                xl:w-78     xl:h-58.75
+                2xl:w-97    2xl:h-73
+                ">
+                    <img className="" src="/assets/images/sector33logo.png" alt="">
+                    </img>
+                </div>
+
 
                 {/*Start Button*/}
                 <div className="absolute text-[#777] flex justify-center items-center startText
@@ -132,6 +287,7 @@ const MainMenuPage = () => {
                             <PlaneSVG className="text-[#777] planeSVG"/>
                         </div>
 
+
                         <div className="font-bold font-mono
                         sm:text-lg
                         md:text-1xl
@@ -149,7 +305,7 @@ const MainMenuPage = () => {
                         onMouseEnter={() => handleMouseEnter(["startText", "planeSVG"])}
                         onMouseLeave={() => handleMouseLeave(["startText", "planeSVG"])}
                         onClick={() => startPressed(["startText", "settingsText", "extrasText", "exitText"])}
-                        className= "absolute z-20
+                        className= "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
                         sm:w-25  sm:h-15
                         md:w-32 md:h-18
                         lg:w-38  lg:h-22
@@ -197,7 +353,7 @@ const MainMenuPage = () => {
                         onMouseEnter={() => handleMouseEnter(["settingsText", "settingsSVG"])}
                         onMouseLeave={() => handleMouseLeave(["settingsText", "settingsSVG"])}
                         onClick={() => optionsPressed()}
-                        className= "absolute z-20
+                        className= "absolute
                         sm:w-25  sm:h-17
                         md:w-32 md:h-21
                         lg:w-38  lg:h-25
@@ -244,7 +400,7 @@ const MainMenuPage = () => {
                         onMouseEnter={() => handleMouseEnter(["extrasText", "extrasSVG"])}
                         onMouseLeave={() => handleMouseLeave(["extrasText", "extrasSVG"])}
                         onClick={() => extrasPressed()}
-                        className= "absolute z-20
+                        className= "absolute
                         sm:w-25  sm:h-17
                         md:w-32 md:h-20
                         lg:w-38  lg:h-25
@@ -291,7 +447,7 @@ const MainMenuPage = () => {
                         onMouseEnter={() => handleMouseEnter(["exitText", "exitSVG"])}
                         onMouseLeave={() => handleMouseLeave(["exitText", "exitSVG"])}
                         onClick={() => quitPressed()}
-                        className= "absolute z-20
+                        className= "absolute
                         sm:w-18  sm:h-12
                         md:w-24 md:h-15
                         lg:w-30  lg:h-19
@@ -301,6 +457,7 @@ const MainMenuPage = () => {
                     </button>
                 </div>
             </div>
+        </div>
         </div>
         </div>
 
