@@ -1,8 +1,10 @@
-import MenuManager from "./MenuManager.jsx";
+import PageRenderer from "/src/Pages/PageRenderer.jsx";
 
 const App = () => {
     return (
-        <MenuManager/>
+        <PageRenderer/>
     )
 }
 export default App;
+
+
