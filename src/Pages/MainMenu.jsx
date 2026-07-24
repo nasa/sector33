@@ -1,5 +1,5 @@
 import React, {useRef, useState} from 'react';
-import { ReturnSVG, PlaneSVG, BookSVG, LevelSVG, ExitSVG, SettingsSVG, SoundSVG, DisplaySVG, ControlsSVG, AccessibilitySVG, ExtrasSVG, CreateSVG, HelpSVG, LearnSVG, FeedbackSVG } from "../../assets/resources/Icons.jsx";
+import { ReturnSVG, PlaneSVG, BookSVG, LevelSVG, ExitSVG, SettingsSVG, SoundSVG, DisplaySVG, ControlsSVG, AccessibilitySVG, ExtrasSVG, CreateSVG, HelpSVG, LearnSVG, FeedbackSVG } from "../../assets/resources/IconSVGs.jsx";
 import {
     StartBtnSvg,
     ExtrasBtnSVG,
@@ -7,12 +7,10 @@ import {
     BackBtnSVG,
     QuitBtnSVG,
     InfoSVG
-} from '../../assets/resources/SVGs.jsx';
+} from '../../assets/resources/ButtonSVGs.jsx';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import {LEVELS_DATA} from "../levelsData.jsx";
-import {globalAnimations} from "../globalAnimations.jsx";
-import {Tutorial_Data} from "../tutorialData.jsx";
+import {globalAnimations} from "../Components/globalAnimations.jsx";
 gsap.registerPlugin(useGSAP);
 
 
@@ -20,49 +18,18 @@ const MainMenu = ({ onNavigate }) => {
     const containerRef = useRef(null);
 
     // Destructure universal animations
-    const {animateIn, animateOut} = globalAnimations();
+    const {animateIn, animateOut, handleMouseEnter, handleMouseLeave} = globalAnimations();
 
     // Run the page entrance animation
-
     const {contextSafe} = useGSAP(() => {
         animateIn('.slide-in');
     }, {scope: containerRef});
 
 
-    // Handle page exit sequence
+    //Handle Button Clicks
     const handleStartClick = () => {
         animateOut(() => onNavigate('StartMenu'), '.fade-out');
     };
-
-
-    // Button Mouse Enter and Leave
-    const handleMouseEnter = contextSafe((e) => {
-        const text= `.${e[0]}`;
-        const svg = `.${e[1]}`;
-        const shapeSvg = `.${e[2]}`;
-
-        //context safe timeline, gsap cleans up automatically
-        gsap.timeline()
-            .to(text, { color: "#FFFFFF", scale: 1.1, duration: 0.5 })
-            .to(svg, { color: "#FFFFFF", scale: 1.1, duration: 0.5 }, 0)
-            .to(shapeSvg, {scale: 1.05, duration: 0.5 }, 0);
-    });
-
-    const handleMouseLeave = contextSafe((e) => {
-        const text = `.${e[0]}`;
-        const svg = `.${e[1]}`;
-        const shapeSvg = `.${e[2]}`;
-
-        // Animate them back to their original state smoothly
-        gsap.timeline()
-            .to(text, { color: "#3b3a3a", scale: 1, duration: 0.5 })
-            .to(svg, { color: "#3b3a3a", scale: 1, duration: 0.5 }, 0)
-            .to(shapeSvg, {scale: 1, duration: 0.5 }, 0);
-
-    });
-
-
-
 
     const settingsPressed = () => {
         alert("settings");
@@ -77,15 +44,10 @@ const MainMenu = ({ onNavigate }) => {
         window.close();
     }
 
-
-
-
 // Main Menu content
     return (
-        // 1. Replaced '@container' with custom style for full size tracking
         <div ref={containerRef}
              className="w-full h-full bg-slate-900 relative"
-             style={{containerType: 'size'}}
         >
 
             {/*Main Content Modal*/}
@@ -115,8 +77,8 @@ const MainMenu = ({ onNavigate }) => {
                     w-[30cqmin] h-[23qmin]
                     startBtn
                     "
-                         onMouseEnter={() => handleMouseEnter(["startText", "startPlaneSVG", "startShapeSVG"])}
-                         onMouseLeave={() => handleMouseLeave(["startText", "startPlaneSVG", "startShapeSVG"])}
+                         onMouseEnter={() => handleMouseEnter(".startText", ".startPlaneSVG", ".startShapeSVG")}
+                         onMouseLeave={() => handleMouseLeave(".startText", ".startPlaneSVG", ".startShapeSVG")}
                          onClick={() => handleStartClick()}
                     >
 
@@ -139,8 +101,8 @@ const MainMenu = ({ onNavigate }) => {
                     w-[30cqmin] h-[23qmin]
                     settingBtn
                     "
-                         onMouseEnter={() => handleMouseEnter(["settingsText", "settingsGearSVG", "settingsShapeSVG"])}
-                         onMouseLeave={() => handleMouseLeave(["settingsText", "settingsGearSVG", "settingsShapeSVG"])}
+                         onMouseEnter={() => handleMouseEnter(".settingsText", ".settingsGearSVG", ".settingsShapeSVG")}
+                         onMouseLeave={() => handleMouseLeave(".settingsText", ".settingsGearSVG", ".settingsShapeSVG")}
                          onClick={() => settingsPressed()}
                     >
                         {/*Parent Wrapper Container for Start*/}
@@ -161,8 +123,8 @@ const MainMenu = ({ onNavigate }) => {
                     w-[30cqmin] h-[23qmin]
                     extrasBtn
                     "
-                         onMouseEnter={() => handleMouseEnter(["extrasText", "extrasBoxSVG", "extrasShapeSVG"])}
-                         onMouseLeave={() => handleMouseLeave(["extrasText", "extrasBoxSVG", "extrasShapeSVG"])}
+                         onMouseEnter={() => handleMouseEnter(".extrasText", ".extrasBoxSVG", ".extrasShapeSVG")}
+                         onMouseLeave={() => handleMouseLeave(".extrasText", ".extrasBoxSVG", ".extrasShapeSVG")}
                          onClick={() => extrasPressed()}
                     >
 
@@ -184,8 +146,8 @@ const MainMenu = ({ onNavigate }) => {
                     w-[20cqmin] h-[23qmin]
                     quitBtn
                     "
-                            onMouseEnter={() => handleMouseEnter(["quitText", "quitDoorSVG", "quitShapeSVG"])}
-                            onMouseLeave={() => handleMouseLeave(["quitText", "quitDoorSVG", "quitShapeSVG"])}
+                            onMouseEnter={() => handleMouseEnter(".quitText", ".quitDoorSVG", ".quitShapeSVG")}
+                            onMouseLeave={() => handleMouseLeave(".quitText", ".quitDoorSVG", ".quitShapeSVG")}
                             onClick={() => quitPressed()}
                     >
 
@@ -199,9 +161,6 @@ const MainMenu = ({ onNavigate }) => {
 
                         <QuitBtnSVG className="quitShapeSVG" style={{'--svg-fill': '#684c6b', '--svg-shadow': '#332438'}}></QuitBtnSVG>
                     </button>
-
-
-
 
                 </div>
             </div>

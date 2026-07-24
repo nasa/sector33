@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useGSAP } from '@gsap/react';
-import { globalAnimations } from '../globalAnimations.jsx';
+import { globalAnimations } from '../Components/globalAnimations.jsx';
 
 const SplashScreen = ({ onNavigate }) => {
     const containerRef = useRef(null);

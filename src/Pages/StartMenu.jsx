@@ -1,9 +1,9 @@
 import React, {useRef, useState} from 'react';
-import { ReturnSVG, PlaneSVG, LevelSVG, LearnSVG,} from "../../assets/resources/Icons.jsx";
-import {StartBtnSvg, BackBtnSVG,} from '../../assets/resources/SVGs.jsx';
+import { ReturnSVG, PlaneSVG, LevelSVG, LearnSVG,} from "../../assets/resources/IconSVGs.jsx";
+import {StartBtnSvg, BackBtnSVG,} from '../../assets/resources/ButtonSVGs.jsx';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import {globalAnimations} from "../globalAnimations.jsx";
+import {globalAnimations} from "../Components/globalAnimations.jsx";
 gsap.registerPlugin(useGSAP);
 
 
@@ -11,10 +11,11 @@ const StartMenu = ({ onNavigate }) => {
     const containerRef = useRef(null);
 
     // Destructure universal animations
-    const {animateIn, animateOut} = globalAnimations();
+    const {handleMouseEnter, handleMouseLeave } = globalAnimations();
+
+    // Start Menu Specific Animations
 
     // Run the page entrance animation
-
     const {contextSafe} = useGSAP(() => {
         gsap.timeline()
             // Hide Everything on Load
@@ -25,81 +26,43 @@ const StartMenu = ({ onNavigate }) => {
             .fromTo([".backBtn", ".tutorialBtn", ".levelsBtn"], {autoAlpha:0, y: "10vw" }, {stagger: 0.2, autoAlpha:1, y: 0, duration: 0.5, ease: "power.in"})
     }, {scope: containerRef});
 
-
-    // Button Mouse Enter and Leave
-    const handleMouseEnter = contextSafe((e) => {
-        const text= `.${e[0]}`;
-        const svg = `.${e[1]}`;
-
-        //context safe timeline, gsap cleans up automatically
-        gsap.timeline()
-            .to(text, { color: "#FFFFFF", scale: 1.1, duration: 0.5 })
-            .to(svg, { color: "#FFFFFF", scale: 1.1, duration: 0.5 }, 0);
-    });
-
-    const handleMouseLeave = contextSafe((e) => {
-        const text = `.${e[0]}`;
-        const svg = `.${e[1]}`;
-
-        // Animate them back to their original state smoothly
-        gsap.timeline()
-            .to(text, { color: "#3b3a3a", scale: 1, duration: 0.5 })
-            .to(svg, { color: "#3b3a3a", scale: 1, duration: 0.5 }, 0);
-
-    });
-
-
     const handleLevelsClick = contextSafe(() => {
         gsap.timeline()
             //Reserve Buttons
             .fromTo([".levelsBtn", ".tutorialBtn", ".backBtn"], {autoAlpha:1, y: 0 }, {stagger: 0.1, autoAlpha:0, y: "10vw", duration: 0.1, ease: "power.out"})
-
             // Plane flies back left
             .fromTo(".planeSelectorSVG", {autoAlpha:1, x:0 }, {autoAlpha:0, x: "100vw", duration: 0.5, ease: "power4.in"}, 0.25)
-
             // Hide Everything
             .to([".planeSelectorSVG", ".backBtn", ".levelsBtn", ".tutorialBtn"], {autoAlpha:0, duration: 0 ,
                 onComplete: () => {onNavigate('Levels')}});
     });
 
-
     const handleTutorialClick = contextSafe(() => {
         gsap.timeline()
             //Reserve Buttons
             .fromTo([".levelsBtn", ".tutorialBtn", ".backBtn"], {autoAlpha:1, y: 0 }, {stagger: 0.1, autoAlpha:0, y: "10vw", duration: 0.1, ease: "power.out"})
-
             // Plane flies back left
             .fromTo(".planeSelectorSVG", {autoAlpha:1, x:0 }, {autoAlpha:0, x: "100vw", duration: 0.5, ease: "power4.in"}, 0.25)
-
             // Hide Everything
             .to([".planeSelectorSVG", ".backBtn", ".levelsBtn", ".tutorialBtn"], {autoAlpha:0, duration: 0 ,
                 onComplete: () => {onNavigate('Tutorial')}});
     });
 
-
-
     const handleBackClick = contextSafe(() => {
             gsap.timeline()
                 //Reserve Buttons
                 .fromTo([".levelsBtn", ".tutorialBtn", ".backBtn"], {autoAlpha:1, y: 0 }, {stagger: 0.1, autoAlpha:0, y: "10vw", duration: 0.1, ease: "power.out"})
-
                 // Plane flies back left
                 .fromTo(".planeSelectorSVG", {autoAlpha:1, x:0 }, {autoAlpha:0, x: "-100vw", duration: 0.5, ease: "power4.in"}, 0.25)
-
                 // Hide Everything
                 .to([".planeSelectorSVG", ".backBtn", ".levelsBtn", ".tutorialBtn"], {autoAlpha:0, duration: 0 ,
                 onComplete: () => {onNavigate('MainMenu')}});
     });
 
-
-
-
-
-// Main Menu content
+// Main Start Menu content
     return (
         <div ref={containerRef}
              className="w-full h-full bg-slate-900 relative"
-             style={{containerType: 'size'}}
         >
 
             {/*Main Content Modal*/}
@@ -128,9 +91,8 @@ const StartMenu = ({ onNavigate }) => {
 
                             {/*Back Button*/}
                             <div className="relative text-[#3b3a3a] backBtn"
-
-                                 onMouseEnter={() => handleMouseEnter(["backText", "backShapeSVG"])}
-                                 onMouseLeave={() => handleMouseLeave(["backText", "backShapeSVG"])}
+                                 onMouseEnter={() => handleMouseEnter(".backText", ".backShapeSVG", "null")}
+                                 onMouseLeave={() => handleMouseLeave(".backText", ".backShapeSVG", "null")}
                                  onClick={() => handleBackClick()}
                             >
                                 <BackBtnSVG className="backShapeSVG w-[12cqmin] h-[12qmin]" style={{'--svg-fill': '#1ac90a', '--svg-shadow': '#198501'}}></BackBtnSVG>
@@ -145,9 +107,8 @@ const StartMenu = ({ onNavigate }) => {
 
                             {/*Tutorial Button*/}
                             <div className="relative text-[#3b3a3a] tutorialBtn"
-
-                                 onMouseEnter={() => handleMouseEnter(["tutorialText", "startShapeSVG2"])}
-                                 onMouseLeave={() => handleMouseLeave(["tutorialText", "startShapeSVG2"])}
+                                 onMouseEnter={() => handleMouseEnter(".tutorialText", ".startShapeSVG2", "null")}
+                                 onMouseLeave={() => handleMouseLeave(".tutorialText", ".startShapeSVG2", "null")}
                                  onClick={() => handleTutorialClick()}
                             >
                                 <StartBtnSvg className="startShapeSVG2" style={{'--svg-fill': '#1ac90a', '--svg-shadow': '#198501'}}></StartBtnSvg>
@@ -164,8 +125,8 @@ const StartMenu = ({ onNavigate }) => {
                             {/*Levels Button*/}
                             <div className="relative text-[#3b3a3a] levelsBtn"
 
-                                 onMouseEnter={() => handleMouseEnter(["levelsText", "startShapeSVG1"])}
-                                 onMouseLeave={() => handleMouseLeave(["levelsText", "startShapeSVG1"])}
+                                 onMouseEnter={() => handleMouseEnter(".levelsText", ".startShapeSVG1", "null")}
+                                 onMouseLeave={() => handleMouseLeave(".levelsText", ".startShapeSVG1", "null")}
                                  onClick={() => handleLevelsClick()}
                             >
                                 <StartBtnSvg className="startShapeSVG1" style={{'--svg-fill': '#1ac90a', '--svg-shadow': '#198501'}}></StartBtnSvg>
@@ -182,7 +143,6 @@ const StartMenu = ({ onNavigate }) => {
                     </div>
                 </div>
             </div>
-
         </div>
     );
 }

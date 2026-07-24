@@ -10,7 +10,7 @@ import Stage from "/src/Pages/Stage.jsx";
 
 const PageRenderer = () => {
     // activePage useState with default being SplashScreen
-    const [activePage, setActivePage] = useState('SplashScreen');
+    const [activePage, setActivePage] = useState('Stage');
 
     //Render Page switching function
     const renderPage = () => {
@@ -21,8 +21,8 @@ const PageRenderer = () => {
         if (activePage === 'Levels') return <Levels onNavigate={setActivePage}/>;
         if (activePage === 'Stage') return <Stage onNavigate={setActivePage}/>;
 
-
     };
+
 
     return (
         // Viewport wrapper to center canvas on any window/screen size
