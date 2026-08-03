@@ -10,7 +10,7 @@ const SplashScreen = ({ onNavigate }) => {
 
     // Run the page entrance animation
     useGSAP(() => {
-        animateIn('.slide-in');
+        animateIn();
     }, { scope: containerRef });
 
     // Handle page exit sequence
@@ -30,14 +30,14 @@ const SplashScreen = ({ onNavigate }) => {
 
                 {/* NASA Logo in top Right*/}
                 <img
-                    className="slide-in absolute top-[1cqh] right-[1cqw] w-[15cqw] h-[15cqh] object-contain object-top-right"
+                    className="slide-in-element absolute top-[1cqh] right-[1cqw] w-[15cqw] h-[15cqh] object-contain object-top-right"
                     src="/assets/images/NasaLogo.png"
                     alt="Nasa Logo"
                 />
 
                 {/* FAA Logo in top Left*/}
                 <img
-                    className="slide-in absolute top-[1cqh] left-[1cqw] w-[15cqw] h-[15cqh] object-contain object-top-left"
+                    className="slide-in-element absolute top-[1cqh] left-[1cqw] w-[15cqw] h-[15cqh] object-contain object-top-left"
                     src="/assets/images/FAALOGO.png"
                     alt="FAA Logo"
                 />
@@ -46,13 +46,13 @@ const SplashScreen = ({ onNavigate }) => {
                 <div className="flex flex-col justify-center items-center">
                     {/*Sector 33 Logo in Center*/}
                     <img
-                        className="slide-in w-[50cqw] aspect-video object-contain"
+                        className="slide-in-element w-[50cqw] aspect-video object-contain"
                         src="/assets/images/sector33logo.png"
                         alt="Logo"
                     />
                     {/* Text below in Center*/}
 
-                    <h1 className="slide-in mt-[4cqh] text-[2.5cqmin] font-mono font-bold text-shadow-lg text-emerald-400">
+                    <h1 className="slide-in-element mt-[4cqh] text-[2.5cqmin] font-mono font-bold text-shadow-lg text-emerald-400">
                         Click Anywhere to Start
                     </h1>
                 </div>

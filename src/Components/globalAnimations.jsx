@@ -7,10 +7,18 @@ export const globalAnimations = () => {
     const { contextSafe } = useGSAP();
 
     // Slide in from below
-    const animateIn = contextSafe((selector = '.slide-in') => {
+    const animateIn = contextSafe(() => {
         gsap.fromTo(
-            selector,
-            { opacity: 0, y: "10vw" },
+            // Center Aligned Items
+            '.slide-in',
+            { opacity: 0, xPercent: -50, yPercent: -50, y: "10vw"},
+            { stagger: 0.1, opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
+        );
+
+        gsap.fromTo(
+            // Non-Center Aligned Items
+            '.slide-in-element',
+            { opacity: 0,y: "10vw"},
             { stagger: 0.1, opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
         );
     });

@@ -40,7 +40,7 @@ const Tutorial = ({ onNavigate }) => {
     // Run on Start
     const {contextSafe} = useGSAP(() => {
         introBannerSlideInOut();
-        animateIn('.slide-in');
+        animateIn();
     }, {scope: containerRef});
 
 
@@ -70,7 +70,7 @@ const Tutorial = ({ onNavigate }) => {
 
                 {/*Main Content Modal*/}
                 <div className="absolute slide-in fade-out
-                top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                top-1/2 left-1/2
                 p-[2cqmin] overflow-y-auto
                 w-[70cqmin] h-[60cqmin]
                 ">

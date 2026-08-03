@@ -19,7 +19,7 @@ const Levels = ({ onNavigate }) => {
 
     const {contextSafe} = useGSAP(() => {
         introBannerSlideInOut();
-        animateIn('.slide-in');
+        animateIn();
 
     }, {scope: containerRef});
 

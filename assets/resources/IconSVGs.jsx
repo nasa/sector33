@@ -356,24 +356,31 @@ const SpeedIconSVG = (props) => (
     </svg>
 );
 
-const DiamondIconSVG = (props) => (
-    <svg
-        width="100%"
-        height="100%"
-        viewBox="0 0 64 64"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-    >
-        <polygon
-            points="32 56 20 32 32 8 44 32 32 56"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-        />
-    </svg>
-);
+
+const DiamondIconSVG = ({ className = "", color, ...props }) => {
+    return (
+        <svg
+            className={className}
+            style={{
+                color: color ? `#${color}` : "currentColor",
+                overflow: "visible",
+                width: "32px",
+                height: "32px"
+            }}
+            viewBox="-10 -20 20 40"
+            {...props}
+        >
+            <polygon
+                points="0 16, -8 0, 0 -16, 8 0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    );
+};
 
 
 export { ReturnSVG, PlaneSVG, BookSVG, LevelSVG, ExitSVG, SettingsSVG, SoundSVG, DisplaySVG, ControlsSVG, AccessibilitySVG, ExtrasSVG, CreateSVG, HelpSVG, LearnSVG, FeedbackSVG, PlayIconSVG, PauseIconSVG, ResetIconSVG, SpeedIconSVG, DiamondIconSVG};

@@ -22,7 +22,7 @@ const MainMenu = ({ onNavigate }) => {
 
     // Run the page entrance animation
     const {contextSafe} = useGSAP(() => {
-        animateIn('.slide-in');
+        animateIn();
     }, {scope: containerRef});
 
 
@@ -62,7 +62,7 @@ const MainMenu = ({ onNavigate }) => {
 
 
                     {/*Main Menu Image*/}
-                    <div className="absolute slide-in
+                    <div className="absolute slide-in-element
                     top-[25cqh] left-[25cqw]
                     w-[50cqmin] h-[23cqmin]">
 
@@ -72,7 +72,7 @@ const MainMenu = ({ onNavigate }) => {
 
 
                     {/*Start Button*/}
-                    <div className="absolute slide-in
+                    <div className="absolute slide-in-element
                     top-[2cqh] left-[2cqw]
                     w-[30cqmin] h-[23qmin]
                     startBtn
@@ -96,7 +96,7 @@ const MainMenu = ({ onNavigate }) => {
 
 
                     {/*Settings Button*/}
-                    <div className="absolute slide-in
+                    <div className="absolute slide-in-element
                     top-[2cqh] right-[2cqw]
                     w-[30cqmin] h-[23qmin]
                     settingBtn
@@ -118,7 +118,7 @@ const MainMenu = ({ onNavigate }) => {
 
 
                     {/*Extras Button*/}
-                    <div className="absolute slide-in
+                    <div className="absolute slide-in-element
                     bottom-[2cqh] right-[2cqw]
                     w-[30cqmin] h-[23qmin]
                     extrasBtn
@@ -141,7 +141,7 @@ const MainMenu = ({ onNavigate }) => {
 
 
                     {/*Quit Button*/}
-                    <button className="absolute slide-in
+                    <button className="absolute slide-in-element
                     bottom-[5cqh] left-[5cqw]
                     w-[20cqmin] h-[23qmin]
                     quitBtn

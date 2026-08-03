@@ -1,10 +1,92 @@
-import * as React from "react";
+import React, { forwardRef } from "react";
+
+const SVGComponentTest = (props) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="40 25 840 400"
+        width="100%"
+        height="100%"
+        {...props}
+    >
+        <defs>
+            <style bx:fonts="Ancizar Sans">
+                {
+                    "@import url(https://fonts.googleapis.com/css2?family=Ancizar+Sans%3Aital%2Cwght%400%2C100..1000%3B1%2C100..1000&display=swap);"
+                }
+            </style>
+        </defs>
+
+        {/* Labels & Numbers */}
+        <g
+            style={{
+                fill: props.color ? `#${props.color}` : "#38bdf8",
+                fontFamily: "'Ancizar Sans'",
+                fontSize: 16,
+                fontWeight: 500,
+                textAnchor: "middle",
+            }}
+            >
+            <text x={41.008} y={208.061} textAnchor="start">TO SFO</text>
+            <text x={224.867} y={207.695}>MOD</text>
+            <text x={433.778} y={210.809}>OAL</text>
+            <text x={592.053} y={211.71} textAnchor="start">TPH</text>
+            <text x={539.359} y={95.237} textAnchor="start">MINAH</text>
+            <text x={539.175} y={363.237} textAnchor="start">LIDAT</text>
+            <text x={52} y={248}>10</text>
+            <text x={138.8} y={248}>5</text>
+            <text x={225.6} y={248}>0</text>
+            <text x={312.3} y={248}>5</text>
+            <text x={399.1} y={248}>10</text>
+            <text x={485.8} y={248}>15</text>
+            <text x={572.5} y={248}>20</text>
+            <text x={659.3} y={248}>25</text>
+            <text x={746} y={248}>30</text>
+            <text x={296} y={174}>5</text>
+            <text x={372} y={136}>10</text>
+            <text x={450} y={96}>15</text>
+            <text x={296} y={284}>5</text>
+            <text x={372} y={322}>10</text>
+            <text x={450} y={362}>15</text>
+            <text x={476.331} y={145.766}>5</text>
+            <text x={475} y={318}>5</text>
+            <text x={624.6} y={52}>25</text>
+            <text x={710.7} y={44}>30</text>
+            <text x={797.3} y={36}>35</text>
+            <text x={859.252} y={64.112} textAnchor="start">40</text>
+            <text x={791.537} y={103.595}>35</text>
+            <text x={718.016} y={144.748}>30</text>
+            <text x={646.26} y={195.237}>25</text>
+            <text x={624.346} y={405.669}>25</text>
+            <text x={708.511} y={414.334}>30</text>
+            <text x={746} y={248}>30</text>
+            <text x={797.713} y={422.454}>35</text>
+            <text x={831.849} y={248.145}>35</text>
+            <text x={534.73} y={59.886}>20</text>
+            <text x={531.918} y={400.268}>20</text>
+        </g>
+
+        {/* Triangles */}
+        <g
+            style={{
+                fill: props.color ? `#${props.color}` : "#38bdf8",
+            }}
+        >
+            <path d="M 227.53,217.47 L 235.03,232.47 L 220.03,232.47 Z" />
+            <path d="M 451.0,217.47 L 458.5,232.47 L 443.5,232.47 Z" />
+            <path d="M 536.0,67.77 L 543.5,82.77 L 528.5,82.77 Z" />
+            <path d="M 624.6,217.47 L 632.1,232.47 L 617.1,232.47 Z" />
+            <path d="M 538.0,366.82 L 545.5,381.82 L 530.5,381.82 Z" />
+        </g>
+    </svg>
+);
+
+
 
 
 const SVGComponent0 = (props) => (
     <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="52 40.869 827.157 368.484"
+        xmlns="http://w3.org"
+        viewBox="40 25 840 400"
         width="100%"
         height="100%"
         {...props}
@@ -12,7 +94,7 @@ const SVGComponent0 = (props) => (
         <path
             style={{
                 fill: "none",
-                stroke: `#${props.color}`,
+                stroke: props.color ? `#${props.color}` : "#38bdf8",
                 strokeWidth: "2px",
                 strokeLinejoin: "square",
                 strokeLinecap: "miter"
@@ -23,144 +105,394 @@ const SVGComponent0 = (props) => (
     </svg>
 );
 
+const SVGComponent1 = forwardRef((props, ref) => {
+    const { color, children, ...restProps } = props;
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="40 25 840 400"
+            width="100%"
+            height="100%"
+            {...restProps}
+        >
+            <path
+                ref={ref}
+                className="motion-track-1 fill-none"
+                style={{
+                    fill: "none",
+                    stroke: `#${color || "000"}`,
+                    strokeWidth: "3px",
+                    strokeLinejoin: "round",
+                    strokeLinecap: "round",
+                }}
+                d="M 52 225.6 L 225.6 225.6 L 536 75 L 798 52"
+            />
+            {children}
+        </svg>
+    );
+});
 
-const SVGComponent1 = (props) => (
-    <svg
+SVGComponent1.displayName = "SVGComponent1";
+
+// Internal Component Breakpoints with Waypoint Reference Names
+SVGComponent1.breakpoints = {
+    "10_END": 0.00,
+    "5_END": 86.80,
+    "0_MOD": 173.59,
+    "5_DESC": 251.85,
+    "10_DESC": 336.32,
+    "15_DESC": 423.02,
+    "20_MINAH": 518.61,
+    "25_INIT_DESC": 607.55,
+    "30_INIT_DESC": 693.98,
+    "35_START": 780.91
+};
+
+// Segment 1: 0px to 173.6px (TO SFO to MOD)
+// Segment 2: 173.6px to 518.6px (MOD to MINAH)
+// Segment 3: 518.6px to 781.6px (MINAH to START)
+// Total 781.6126708984375 px Long
+
+// All Values in px (Label - Track : px)
+// Segment 1
+// 10 - End : 0
+// 5 - End : 86.8
+// 0 - MOD : 173.6
+//Segment 2
+// 5 -  Desc : 251.85
+// 10 - Desc : 336.32
+// 15 - Desc : 423.02
+// 20 - MINAH : 518.61
+//Segment 3
+// 25 - Init Desc : 607.55
+// 30 - Init Desc : 693.98
+// 35 - Start : 780.91
+
+// Each small tick is 17.36px long
+// Each small tick in Diag is 17.34px long
+
+
+const SVGComponent2 = forwardRef((props, ref) => {
+    const { color, children, ...restProps } = props;
+    return (
+        <svg
         xmlns="http://www.w3.org/2000/svg"
-        viewBox="52 40.869 827.157 368.484"
+        viewBox="40 25 840 400"
         width="100%"
         height="100%"
-        {...props}
-    >
+        {...restProps}
+        >
         <path
-            className="motion-track-1 fill-none"
-            style={{
-                fill: "none",
-                stroke: `#${props.color}`,
-                strokeWidth: "3px",
-                strokeLinejoin: "round",
-                strokeLinecap: "round",
-            }}
-            d="M 52 225.6 L 225.6 225.6 L 536 75 L 798 52"
-        />
-        {props.children}
-    </svg>
-);
-
-
-const SVGComponent2 = (props) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="52 40.869 827.157 368.484"
-        width="100%"
-        height="100%"
-        {...props}
-    >
-        <path
+            ref={ref}
             className="motion-track-2 fill-none"
             style={{
                 fill: "none",
-                stroke: `#${props.color}`,
+                stroke: `#${color || "000"}`,
                 strokeWidth: "3px",
                 strokeLinejoin: "round",
                 strokeLinecap: "round"
             }}
             d="M 52 225.6 L 225.6 225.6 L 451 225.6 L 536 75 L 798 52"
         />
-        {props.children}
+            {children}
     </svg>
-);
+    );
+});
 
-const SVGComponent3 = (props) => (
-    <svg
+SVGComponent2.breakpoints = {
+    "10_END": 0.00,
+    "5_END": 86.80,
+    "0_MOD": 173.59,
+    "5_HORIZONTAL": 260.30,
+    "10_HORIZONTAL": 347.10,
+    "13_OAL": 399.00,
+    "20_MINAH": 571.93,
+    "25_INIT_DESC": 661.12,
+    "30_INIT_DESC": 747.81,
+    "35_START": 834.94
+};
+
+// Segment 1: 0px to 399.00px (TO SFO to OAL)
+// Segment 2: 399.00px to 571.93px (OAL to MINAH)
+// Segment 3: 571.93px to 834.94px (MINAH to START)
+// 834.939208984375 px Long
+
+// All Values in px (Label - Track : px)
+// Segment 1
+// 10 - End : 0
+// 5 - End : 86.8
+// 0 - MOD : 173.6
+// 5 -  Horizontal : 260.30
+// 10 - Horizontal : 347.10
+// 13 - OAL : 399.00
+// Segment 2
+// 20 - MINAH : 571.93
+// Segment 3
+// 25 - Init Desc : 661.12
+// 30 - Init Desc : 747.81
+// 35 - Start : 834.94
+
+// Each small tick is 17.36px long
+// Each small tick on Diag drop is 34.59px long
+SVGComponent2.displayName = "SVGComponent2";
+
+
+const SVGComponent3 = forwardRef((props, ref) => {
+    const { color, children, ...restProps } = props;
+    return (
+        <svg
         xmlns="http://www.w3.org/2000/svg"
-        viewBox="52 40.869 827.157 368.484"
+        viewBox="40 25 840 400"
         width="100%"
         height="100%"
-        {...props}
-    >
+        {...restProps}
+        >
         <path
+            ref={ref}
             className="motion-track-3 fill-none"
             style={{
                 fill: "none",
-                stroke: `#${props.color}`,
+                stroke: `#${color || "000"}`,
                 strokeWidth: "3px",
                 strokeLinejoin: "round",
                 strokeLinecap: "round"
             }}
             d="M 52 225.6 L 225.6 225.6 L 538 375 L 798 398"
         />
-        {props.children}
+            {children}
     </svg>
-);
+    );
+});
+SVGComponent3.breakpoints = {
+    "10_END": 0.00,
+    "5_END": 86.80,
+    "0_MOD": 173.59,
+    "5_DESC": 251.81,
+    "10_DESC": 336.26,
+    "15_DESC": 422.92,
+    "20_LIDAT": 519.89,
+    "25_INIT_DESC": 606.31,
+    "30_INIT_DESC": 690.62,
+    "35_START": 780.90
+};
 
-const SVGComponent4 = (props) => (
-    <svg
+// Segment 1: 0px to 173.6px (TO SFO to MOD)
+// Segment 2: 173.6px to 518.6px (MOD to LIDAT)
+// Segment 3: 518.6px to 781.6px (LIDAT to START)
+// 780.9014892578125 px Long
+
+// All Values in px (Label - Track : px)
+// Segment 1
+// 10 - End : 0
+// 5 - End : 86.8
+// 0 - MOD : 173.6
+// Segment 2
+// 5 -  Desc : 251.81
+// 10 - Desc : 336.26
+// 15 - Desc : 422.92
+// 20 - LIDAT : 519.89
+// Segment 3
+// 25 - Init Desc : 606.31
+// 30 - Init Desc : 690.62
+// 35 - Start : 780.90
+
+// Each small tick is 17.36px long
+// Each small tick in Diag is 17.34px long
+
+
+SVGComponent3.displayName = "SVGComponent3";
+
+
+
+const SVGComponent4 = forwardRef((props, ref) => {
+    const { color, children, ...restProps } = props;
+    return (
+        <svg
         xmlns="http://www.w3.org/2000/svg"
-        viewBox="52 40.869 827.157 368.484"
+        viewBox="40 25 840 400"
         width="100%"
         height="100%"
-        {...props}
+        {...restProps}
     >
         <path
+            ref={ref}
             className="motion-track-4 fill-none"
             style={{
                 fill: "none",
-                stroke: `#${props.color}`,
+                stroke: `#${color || "000"}`,
                 strokeWidth: "3px",
                 strokeLinejoin: "round",
                 strokeLinecap: "round"
             }}
             d="M 52 225.6 L 225.6 225.6 L 451 225.6 L 538 375 L 798 398"
         />
-        {props.children}
+        {children}
     </svg>
-);
+    );
+});
 
-const SVGComponent5 = (props) => (
-    <svg
+SVGComponent4.breakpoints = {
+    "10_END": 0.00,
+    "5_END": 86.80,
+    "0_MOD": 173.59,
+    "5_HORIZONTAL": 260.30,
+    "10_HORIZONTAL": 347.10,
+    "13_OAL": 399.00,
+    "20_LIDAT": 571.89,
+    "25_INIT_DESC": 658.31,
+    "30_INIT_DESC": 742.62,
+    "35_START": 832.90
+};
+
+// Segment 1: 0px to 173.6px (TO SFO to OAL)
+// Segment 2: 173.6px to 518.6px (OAL to LIDAT)
+// Segment 3: 518.6px to 781.6px (LIDAT to START)
+// 832.9006958007812 px Long
+
+// All Values in px (Label - Track : px)
+// Segment 1
+// 10 - End : 0
+// 5 - End : 86.8
+// 0 - MOD : 173.6
+// 5 -  Horizontal : 260.30
+// 10 - Horizontal : 347.10
+// 13 - OAL : 399.00
+// Segment 2
+// 20 - LIDAT : 571.89
+// Segment 3
+// 25 - Init Desc : 658.31
+// 30 - Init Desc : 742.62
+// 35 - Start : 832.90
+
+// Each small tick is 17.36px long
+// Each small tick in Diag is 39.75 px long
+SVGComponent4.displayName = "SVGComponent4";
+
+const SVGComponent5 = forwardRef((props, ref) => {
+    const { color, children, ...restProps } = props;
+    return (
+        <svg
         xmlns="http://www.w3.org/2000/svg"
-        viewBox="52 40.869 827.157 368.484"
+        viewBox="40 25 840 400"
         width="100%"
         height="100%"
-        {...props}
+        {...restProps}
 >
         <path
+            ref={ref}
             className="motion-track-5 fill-none"
             style={{
                 fill: "none",
-                stroke: `#${props.color}`,
+                stroke: `#${color || "000"}`,
                 strokeWidth: "3px",
                 strokeLinejoin: "round",
                 strokeLinecap: "round"
             }}
             d="M 52 225.6 L 225.6 225.6 L 451 225.6 L 625.489 225.155 L 879.889 74.555"
         />
-        {props.children}
+            {children}
     </svg>
 );
+});
 
-const SVGComponent6 = (props) => (
-    <svg
+SVGComponent5.breakpoints = {
+    "10_END": 0.00,
+    "5_END": 86.80,
+    "SEP_1": 121.51,
+    "0_MOD": 173.59,
+    "5_HORIZONTAL": 260.30,
+    "10_HORIZONTAL": 347.10,
+    "13_OAL": 399.00,
+    "15_HORIZONTAL": 433.72,
+    "20_HORIZONTAL": 520.52,
+    "23_TPH": 572.60,
+    "25_INIT_DESC": 667.65,
+    "30_INIT_DESC": 742.45,
+    "35_START": 869.12
+};
+
+// Segment 1: 0px to 173.6px (TO SFO to TPH)
+// Segment 2: 173.6px to 518.6px (TPH to START)
+// 869.1239624023438 px Long
+
+// All Values in px (Label - Track : px)
+// Segment 1
+// 10 - End : 0
+// 5 - End : 86.8
+// 0 - MOD : 173.6
+// 5 -  Horizontal : 260.30
+// 10 - Horizontal : 347.10
+// 13 - OAL : 399.00
+// Segment 2
+// 20 - TPH : 573.49
+// 25 - Init Desc : 667.65
+// 30 - Init Desc : 742.45
+// 35 - Start : 869.12
+
+// Each small tick is 17.36px long
+// Each small tick in Diag is 59.04 px long
+SVGComponent5.displayName = "SVGComponent5";
+
+
+const SVGComponent6 = forwardRef((props, ref) => {
+    const { color, children, ...restProps } = props;
+    return (
+        <svg
         xmlns="http://www.w3.org/2000/svg"
-        viewBox="52 40.869 827.157 368.484"
+        viewBox="40 25 840 400"
         width="100%"
         height="100%"
-        {...props}
+        {...restProps}
     >
         <path
+            ref={ref}
             className="motion-track-6 fill-none"
             style={{
                 fill: "none",
-                stroke: `#${props.color}`,
+                stroke: `#${color || "000"}`,
                 strokeWidth: "3px",
                 strokeLinejoin: "round",
                 strokeLinecap: "round"
             }}
             d="M 52 225.6 L 225.6 225.6 L 451 225.6 L 624.6 225.6 L 832.8 225.6"
         />
-        {props.children}
+            {children}
     </svg>
 );
+});
+SVGComponent6.breakpoints = {
+    "10_END": 0.00,
+    "5_END": 86.80,
+    "SEP_1": 121.51,
+    "0_MOD": 173.59,
+    "5_HORIZONTAL": 260.30,
+    "10_HORIZONTAL": 347.10,
+    "13_OAL": 399.00,
+    "15_HORIZONTAL": 433.72,
+    "20_HORIZONTAL": 520.52,
+    "23_TPH": 572.60,
+    "25_HORIZONTAL": 607.30,
+    "30_HORIZONTAL": 694.00,
+    "35_START": 780.80
+};
 
-export {SVGComponent0, SVGComponent1, SVGComponent2, SVGComponent3, SVGComponent4, SVGComponent5, SVGComponent6};
+// Segment 1: 0px to 869.12px (TO SFO to START)
+// 780.7999877929688 px Long
+
+// All Values in px (Label - Track : px)
+// Segment 1
+// 10 - End : 0
+// 5 - End : 86.8
+// 0 - MOD : 173.6
+// 5 -  Horizontal : 260.30
+// 10 - Horizontal : 347.10
+// 13 - OAL : 399.00
+// 20 - TPH : 572.60
+// 25 - Horizontal : 607.30
+// 30 - Horizontal : 694.00
+// 35 - Start : 780.80
+
+// Each small tick is 17.36px long
+SVGComponent6.displayName = "SVGComponent6";
+
+export {SVGComponent0, SVGComponent1, SVGComponent2, SVGComponent3, SVGComponent4, SVGComponent5, SVGComponent6, SVGComponentTest};

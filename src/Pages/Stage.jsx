@@ -3,131 +3,234 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 gsap.registerPlugin(useGSAP);
 import { globalAnimations } from "../Components/globalAnimations.jsx";
-import { PlayIconSVG, PauseIconSVG, ResetIconSVG, SpeedIconSVG } from "../../assets/resources/IconSVGs.jsx";
+import { PlayIconSVG, PauseIconSVG, ResetIconSVG, SpeedIconSVG, DiamondIconSVG } from "../../assets/resources/IconSVGs.jsx";
 import { ReturnToMenuBtn, IntroBanner } from "../Components/UIComponents.jsx";
-
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 gsap.registerPlugin(MotionPathPlugin);
+import {SVGComponent0, SVGComponentTest} from '../../assets/resources/PathSVGs.jsx';
+import { tracks, startingConditions, calculateMotionPathProps, cycleTimelineSpeed } from "../Components/SimConfig";
 
-import { SVGComponent0, SVGComponent1, SVGComponent6 } from '../../assets/resources/PathSVGs.jsx';
-import { SimpleBox } from '../../assets/resources/BOX.jsx';
-import { useSimConfig } from "/src/Pages/SimConfig.jsx";
+
+
 
 const Stage = ({ onNavigate }) => {
+
+    // Global Animations
+    const { animateIn, animateOut, handleMouseEnter, handleMouseLeave, introBannerSlideInOut } = globalAnimations();
+
+    // References to DOM elements
     const containerRef = useRef(null);
     const timelineRef = useRef(null);
 
-    // Track simulation speed multiplier state
-    const [simSpeed, setSimSpeed] = useState(1);
+    const pathRefs = useRef({});
 
-    // Fetch global animations and config values
-    const { animateIn, animateOut, handleMouseEnter, handleMouseLeave, introBannerSlideInOut } = globalAnimations();
-    const { startingConditions } = useSimConfig();
+    const visibleTracksRef = useRef({});
 
-    const { contextSafe } = useGSAP({ scope: containerRef });
+    const trailTweenAddedRef = useRef({});
+
+    // React state hooks for layout changes
+    const [currentSpeedLabel, setCurrentSpeedLabel] = useState(1);
+    const [activePlanes, setActivePlanes] = useState(["planeAlpha", "planeBeta"]);
+    const [visibleTracks, setVisibleTracks] = useState({});
+
+    const { contextSafe } = useGSAP(() => {
+        introBannerSlideInOut();
+        animateIn();
+
+        if (timelineRef.current) timelineRef.current.kill();
+        timelineRef.current = gsap.timeline({ paused: true });
+
+        activePlanes.forEach((planeKey) => {
+            const config = startingConditions[planeKey];
+            const track = tracks[config.trackKey];
+            const pathElement = pathRefs.current[planeKey];
+
+            if (pathElement && track) {
+                const totalLength = pathElement.getTotalLength();
+                const motionProps = calculateMotionPathProps(config, track.SvgComponent, totalLength);
+
+                const initialOffset = totalLength * (1 - motionProps.startProgress);
+
+                gsap.set(pathElement, {
+                    strokeDasharray: totalLength,
+                    strokeDashoffset: initialOffset,
+                    opacity: 0
+                });
+
+                timelineRef.current.to(config.planeId, {
+                    motionPath: {
+                        path: pathElement,
+                        align: pathElement,
+                        alignOrigin: motionProps.alignOrigin,
+                        autoRotate: motionProps.autoRotate,
+                        start: motionProps.startProgress,
+                        end: motionProps.endProgress
+                    },
+                    duration: motionProps.duration,
+                    ease: motionProps.ease
+                }, 0);
+            }
+        });
+
+        activePlanes.forEach((planeKey) => {
+            if (visibleTracksRef.current[planeKey]) {
+                revealTrail(planeKey);
+            }
+        });
+
+        timelineRef.current.progress(0.0001);
+    }, { scope: containerRef, dependencies: [activePlanes] });
+
+
 
     // Page Leave Animations
     const menuPressed = () => {
         animateOut(() => onNavigate('MainMenu'), '.fade-out');
     };
 
-    // Page Enter Animations
-    useGSAP(() => {
-        introBannerSlideInOut();
-        animateIn('.slide-in');
-    }, { scope: containerRef });
-
-    // Sync timeline speed whenever simSpeed state changes
-    useEffect(() => {
+    // Control Buttons (Standard syntax)
+    const playPressed = contextSafe(function() {
         if (timelineRef.current) {
-            timelineRef.current.timeScale(simSpeed);
+            timelineRef.current.play();
         }
-    }, [simSpeed]);
+    });
 
-    // Setup the Timeline Dynamically with pixel-perfect speed calculations
-    const initTimeline = contextSafe(() => {
-        if (timelineRef.current) return;
+    const pausePressed = contextSafe(function() {
+        if (timelineRef.current) {
+            timelineRef.current.pause();
+        }
+    });
 
-        timelineRef.current = gsap.timeline({ paused: true });
+    const resetPressed = contextSafe(function() {
+        if (timelineRef.current) {
+            timelineRef.current.restart().pause();
+        }
+    });
 
-        // Calculate dynamic duration for Box 1
-        const path1 = document.querySelector(".motion-track-1");
-        if (path1) {
-            const length1 = MotionPathPlugin.getLength(path1);
-            const dist1 = Math.abs(startingConditions.box1.start - startingConditions.box1.end);
-            const duration1 = (length1 * dist1) / startingConditions.speed;
+    const speedPressed = contextSafe(function() {
+        if (timelineRef.current) {
+            const activeSpeed = cycleTimelineSpeed(timelineRef.current);
+            setCurrentSpeedLabel(activeSpeed);
+        }
+    });
 
-            timelineRef.current.to(".moving-box-1", {
-                motionPath: {
-                    path: ".motion-track-1",
-                    align: ".motion-track-1",
-                    alignOrigin: [0.5, 0.5],
-                    autoRotate: true,
-                    start: startingConditions.box1.start,
-                    end: startingConditions.box1.end
-                },
-                duration: duration1,
-                ease: "none"
+    const revealTrail = contextSafe((planeKey) => {
+        const config = startingConditions[planeKey];
+        const track = tracks[config.trackKey];
+        const pathElement = pathRefs.current[planeKey];
+
+        if (!pathElement || !track || !timelineRef.current) return;
+
+        if (!trailTweenAddedRef.current[planeKey]) {
+            const totalLength = pathElement.getTotalLength();
+            const motionProps = calculateMotionPathProps(config, track.SvgComponent, totalLength);
+            const finalOffset = totalLength * (1 - motionProps.endProgress);
+
+            timelineRef.current.to(pathElement, {
+                strokeDashoffset: finalOffset,
+                duration: motionProps.duration,
+                ease: motionProps.ease
             }, 0);
+
+            trailTweenAddedRef.current[planeKey] = true;
         }
 
-        // Calculate dynamic duration for Box 2
-        const path2 = document.querySelector(".motion-track-6");
-        if (path2) {
-            const length2 = MotionPathPlugin.getLength(path2);
-            const dist2 = Math.abs(startingConditions.box2.start - startingConditions.box2.end);
-            const duration2 = (length2 * dist2) / startingConditions.speed;
+        gsap.set(pathElement, { opacity: 1 });
 
-            timelineRef.current.to(".moving-box-2", {
-                motionPath: {
-                    path: ".motion-track-6",
-                    align: ".motion-track-6",
-                    alignOrigin: [0.5, 0.5],
-                    autoRotate: true,
-                    start: startingConditions.box2.start,
-                    end: startingConditions.box2.end
-                },
-                duration: duration2,
-                ease: "none"
-            }, 0);
-        }
+    });
 
-        // Apply the active state multiplier right after creation
-        timelineRef.current.timeScale(simSpeed);
+    const hideTrail = contextSafe((planeKey) => {
+        const pathElement = pathRefs.current[planeKey];
+        if (!pathElement || !visibleTracksRef.current[planeKey]) return;
+
+        gsap.set(pathElement, { opacity: 0 });
+
+        visibleTracksRef.current[planeKey] = false;
+        setVisibleTracks(prev => ({ ...prev, [planeKey]: false }));
+    });
+
+    const hideAllTrails = contextSafe(() => {
+        activePlanes.forEach((planeKey) => {
+            if (visibleTracksRef.current[planeKey]) hideTrail(planeKey);
+        });
     });
 
 
-
-
-
-
-    // Button Handling
-    const playPressed = contextSafe(() => {
-        initTimeline();
-        if (timelineRef.current) timelineRef.current.play();
+    const handlePlaneClick = contextSafe((e, planeKey) => {
+        e.stopPropagation();
+        if (visibleTracksRef.current[planeKey]) return;
+        revealTrail(planeKey);
+        timelineRef.current.render(timelineRef.current.time(), true, true);
+        visibleTracksRef.current[planeKey] = true;
+        setVisibleTracks(prev => ({ ...prev, [planeKey]: true }));
     });
 
-    const pausePressed = contextSafe(() => {
-        if (timelineRef.current) timelineRef.current.pause();
-    });
-
-    const resetPressed = contextSafe(() => {
-        if (timelineRef.current) timelineRef.current.restart().pause();
-    });
-
-    // Change Speed
-    const changeSimSpeed = (speedMultiplier) => {
-        setSimSpeed(10);
-    };
 
 
     return (
         <div ref={containerRef}
-             className="w-full h-full bg-slate-900 relative fade-out border border-red-400"
+             className="w-full h-full bg-slate-900 relative fade-out"
+             onClick={hideAllTrails}
         >
+
+
+            {/*Main Content Modal*/}
+            <div className="absolute slide-in fade-out
+                top-1/2 left-1/2
+                p-[2cqmin]
+                w-[90cqi] h-[90cqb]
+                pointer-events-none
+                "
+                 onClick={(e) => e.stopPropagation()}
+            >
+
+                {/*Main Path SVG Background*/}
+                <div className="absolute inset-0">
+                    <SVGComponentTest color="FFFFFF"/>
+                </div>
+
+
+                {/*Main Path SVG Background*/}
+                <div className="absolute inset-0">
+                    <SVGComponent0 color="FFFFFF"/>
+                </div>
+
+
+                {activePlanes.map((planeKey) => {
+                    const config = startingConditions[planeKey];
+                    const track = tracks[config.trackKey];
+                    const TrackSvg = track.SvgComponent;
+                    const planeClass = config.planeId.replace('.', '');
+
+                    const pathEl = pathRefs.current[planeKey];
+                    const totalLength = pathEl ? pathEl.getTotalLength() : 0;
+
+                    return (
+                        <div key={planeKey} className="absolute inset-0 w-full h-full pointer-events-none">
+
+                            <TrackSvg
+                                ref={(svgElement) => { if (svgElement) pathRefs.current[planeKey] = svgElement; }}
+                                color="ef483f"
+                                style={{
+                                    "--length": totalLength
+                                }}
+                            />
+
+                            <div className={`${planeClass} absolute pointer-events-auto cursor-pointer`}>
+                                <DiamondIconSVG
+                                    color="00FFFF"
+                                    onClick={(e) => handlePlaneClick(e, planeKey)}
+                                />
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
 
             {/*Exit to Main Menu Button*/}
             <ReturnToMenuBtn
+                onClick={(e) => e.stopPropagation()}
                 handleMouseEnter={handleMouseEnter}
                 handleMouseLeave={handleMouseLeave}
                 menuPressed={menuPressed}
@@ -139,9 +242,9 @@ const Stage = ({ onNavigate }) => {
 
 
             {/*Controls*/}
-            <div className="absolute slide-in fade-out flex items-center
+            <div className="absolute slide-in-element fade-out flex items-center
                 bottom-[5cqi] left-[5cqb]
-                border border-red-500
+                {/*border border-red-500*/}
                 overflow-hidden
                 w-[30cqi] h-[10cqb]
                 p-[2cqmin]
@@ -154,9 +257,12 @@ const Stage = ({ onNavigate }) => {
                 w-[7.5cqmin] h-[7.5cqmin]
                 p-[1cqmin]
                 "
-                        onMouseEnter={() => handleMouseEnter(".PlayIcon", "null", "null")}
-                        onMouseLeave={() => handleMouseLeave(".PlayIcon", "null", "null")}
-                        onClick={playPressed}
+                        onMouseEnter={() => handleMouseEnter(".PlayIcon", null, null)}
+                        onMouseLeave={() => handleMouseLeave(".PlayIcon", null, null)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            playPressed();
+                        }}
                 >
                     <PlayIconSVG className="PlayIcon w-full h-full"/>
                 </button>
@@ -167,9 +273,13 @@ const Stage = ({ onNavigate }) => {
                 w-[7.5cqmin] h-[7.5cqmin]
                 p-[1cqmin]
                 "
-                        onMouseEnter={() => handleMouseEnter(".PauseIcon", "null", "null")}
-                        onMouseLeave={() => handleMouseLeave(".PauseIcon", "null", "null")}
-                        onClick={() => pausePressed()}
+                        onMouseEnter={() => handleMouseEnter(".PauseIcon", null, null)}
+                        onMouseLeave={() => handleMouseLeave(".PauseIcon", null, null)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            pausePressed();
+                        }}
+
                 >
                     <PauseIconSVG className="PauseIcon w-full h-full"/>
                 </button>
@@ -180,9 +290,12 @@ const Stage = ({ onNavigate }) => {
                 w-[7.5cqmin] h-[7.5cqmin]
                 p-[1cqmin]
                 "
-                        onMouseEnter={() => handleMouseEnter(".ResetIcon", "null", "null")}
-                        onMouseLeave={() => handleMouseLeave(".ResetIcon", "null", "null")}
-                        onClick={() => resetPressed()}
+                        onMouseEnter={() => handleMouseEnter(".ResetIcon", null, null)}
+                        onMouseLeave={() => handleMouseLeave(".ResetIcon", null, null)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            resetPressed();
+                        }}
                 >
                     <ResetIconSVG className="ResetIcon w-full h-full"/>
                 </button>
@@ -192,43 +305,26 @@ const Stage = ({ onNavigate }) => {
                 w-[7.5cqmin] h-[7.5cqmin]
                 p-[1cqmin]
                 "
-                        onMouseEnter={() => handleMouseEnter(".SpeedIcon", "null", "null")}
-                        onMouseLeave={() => handleMouseLeave(".SpeedIcon", "null", "null")}
-                        onClick={() => changeSimSpeed()}
+                        onMouseEnter={() => handleMouseEnter(".SpeedIcon", null, null)}
+                        onMouseLeave={() => handleMouseLeave(".SpeedIcon", null, null)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            speedPressed();
+                        }}
                 >
-                    <SpeedIconSVG className="SpeedIcon w-full h-full"/>
+                    <div className= "flex items-center justify-center">
+                        <SpeedIconSVG className="SpeedIcon w-full h-full"/>
+                        <span className="text-[2cqmin]">
+                            {currentSpeedLabel}x
+                        </span>
+                    </div>
+
                 </button>
             </div>
 
-
-            {/*Main Content Modal*/}
-            <div className="absolute slide-in fade-out
-                top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                p-[2cqmin]
-                w-[90cqi] h-[90cqb]
-                pointer-events-none
-                ">
-
-                {/*Main Path SVG Background*/}
-                <div className="absolute inset-0 p-[2cqmin]">
-                    <SVGComponent0 color="FFFFFF"/>
-                </div>
-
-                {/*Conditionally Rendered Highlighted Path 1*/}
-                <div className="absolute inset-0 p-[2cqmin] pointer-events-auto [--glow:#ef483f] filter-[drop-shadow(0_0_15px_var(--glow))]">
-                    <SVGComponent1 color="ef483f"/>
-                    <SimpleBox className="moving-box-1"/>
-                </div>
-
-                {/*Conditionally Rendered Highlighted Path 2*/}
-                <div className="absolute inset-0 p-[2cqmin] pointer-events-auto [--glow:#ef483f] filter-[drop-shadow(0_0_15px_var(--glow))]">
-                    <SVGComponent6 color="ef483f"/>
-                    <SimpleBox className="moving-box-2"/>
-                </div>
-
-
-            </div>
         </div>
+
     );
+
 }
 export default Stage;
