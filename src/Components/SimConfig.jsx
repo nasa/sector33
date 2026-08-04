@@ -36,21 +36,16 @@ export const startingConditions = {
 
 // Calculates pixel locations into GSAP MotionPath progress and calc travel timeline
 export const calculateMotionPathProps = (planeConfig, trackSvgComponent, totalLength) => {
-    // Get the pixel breakpoints from the mapped path
     const map = trackSvgComponent.breakpoints || {};
     const startValue = map[planeConfig.startPixel] || planeConfig.startPixel;
     const endValue = map[planeConfig.endPixel] || planeConfig.endPixel;
 
-    // Calc pixel distance between start and end
     const absoluteDistanceTraveled = Math.abs(endValue - startValue);
 
-    // Set base speed of 600kts = 2.899 fallback
     const currentSpeed = planeConfig.speed || 2.899;
 
-    // Total time is distance / speed
     const calcDuration = absoluteDistanceTraveled / currentSpeed;
 
-    // Return and Map the pixel values to the percentage coordinates for GSAP
     return {
         startProgress: startValue / totalLength,
         endProgress: endValue / totalLength,
@@ -73,3 +68,4 @@ export const cycleTimelineSpeed = (timeline) => {
     timeline.timeScale(nextScale);
     return nextScale;
 };
+

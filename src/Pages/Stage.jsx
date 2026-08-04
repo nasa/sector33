@@ -32,10 +32,15 @@ const Stage = ({ onNavigate }) => {
     const [currentSpeedLabel, setCurrentSpeedLabel] = useState(1);
     const [activePlanes, setActivePlanes] = useState(["planeAlpha", "planeBeta"]);
     const [visibleTracks, setVisibleTracks] = useState({});
+    const [activePlane, setActivePlane] = useState("AAL12");
+    const [planeCurrentSpeeds, setPlaneCurrentSpeeds] = useState({});
 
     const { contextSafe } = useGSAP(() => {
+        //On load animations
         introBannerSlideInOut();
         animateIn();
+        gsap.to('.speedControls', { autoAlpha: 0, duration:0});
+
 
         if (timelineRef.current) timelineRef.current.kill();
         timelineRef.current = gsap.timeline({ paused: true });
@@ -48,8 +53,9 @@ const Stage = ({ onNavigate }) => {
             if (pathElement && track) {
                 const totalLength = pathElement.getTotalLength();
                 const motionProps = calculateMotionPathProps(config, track.SvgComponent, totalLength);
-
                 const initialOffset = totalLength * (1 - motionProps.startProgress);
+
+                const planeGroupTimeline = gsap.timeline({ id: planeKey });
 
                 gsap.set(pathElement, {
                     strokeDasharray: totalLength,
@@ -57,7 +63,7 @@ const Stage = ({ onNavigate }) => {
                     opacity: 0
                 });
 
-                timelineRef.current.to(config.planeId, {
+                planeGroupTimeline.to(config.planeId, {
                     motionPath: {
                         path: pathElement,
                         align: pathElement,
@@ -69,8 +75,11 @@ const Stage = ({ onNavigate }) => {
                     duration: motionProps.duration,
                     ease: motionProps.ease
                 }, 0);
+
+                timelineRef.current.add(planeGroupTimeline, 0);
             }
         });
+
 
         activePlanes.forEach((planeKey) => {
             if (visibleTracksRef.current[planeKey]) {
@@ -126,19 +135,25 @@ const Stage = ({ onNavigate }) => {
             const motionProps = calculateMotionPathProps(config, track.SvgComponent, totalLength);
             const finalOffset = totalLength * (1 - motionProps.endProgress);
 
-            timelineRef.current.to(pathElement, {
-                strokeDashoffset: finalOffset,
-                duration: motionProps.duration,
-                ease: motionProps.ease
-            }, 0);
+            const planeGroupTimeline = timelineRef.current.getById(planeKey);
+
+            if (planeGroupTimeline) {
+                planeGroupTimeline.to(pathElement, {
+                    strokeDashoffset: finalOffset,
+                    duration: motionProps.duration,
+                    ease: motionProps.ease
+                }, 0);
+            }
 
             trailTweenAddedRef.current[planeKey] = true;
         }
 
         gsap.set(pathElement, { opacity: 1 });
-
     });
 
+
+
+    // Show/Hide Plane Trails
     const hideTrail = contextSafe((planeKey) => {
         const pathElement = pathRefs.current[planeKey];
         if (!pathElement || !visibleTracksRef.current[planeKey]) return;
@@ -153,17 +168,64 @@ const Stage = ({ onNavigate }) => {
         activePlanes.forEach((planeKey) => {
             if (visibleTracksRef.current[planeKey]) hideTrail(planeKey);
         });
+        gsap.to('.speedControls', { autoAlpha: 0, duration:0.25, ease:'easeOut' });
+
     });
 
 
     const handlePlaneClick = contextSafe((e, planeKey) => {
         e.stopPropagation();
+        // If same plane clicked do nothing
         if (visibleTracksRef.current[planeKey]) return;
+        // hide all other trails
+        hideAllTrails();
+        // reveal the trail of the plane clicked
         revealTrail(planeKey);
+        // timeline
         timelineRef.current.render(timelineRef.current.time(), true, true);
         visibleTracksRef.current[planeKey] = true;
         setVisibleTracks(prev => ({ ...prev, [planeKey]: true }));
+
+        // display speed controls
+        displaySpeedControls(e, planeKey);
+        setActivePlane(planeKey);
     });
+
+    // Show/Hide Speed Controls per plane
+    const displaySpeedControls = contextSafe((e, planeKey) => {
+        gsap.to('.speedControls', { autoAlpha: 1, duration:0.25, ease:'easeIn' });
+
+    });
+
+
+    const speedMultipliers = {
+        600: 1.0,   // Base
+        540: 0.9,
+        480: 0.8,
+        420: 0.7,
+        360: 0.6,
+        300: 0.5    // 1/2
+    };
+
+
+    const speedChanged = contextSafe((e, speedNum) => {
+        if (!timelineRef.current) return;
+
+        const globalTime = timelineRef.current.time();
+        const multiplier = speedMultipliers[speedNum] || 1.0;
+
+        const planeGroupTimeline = timelineRef.current.getById(activePlane);
+
+        if (planeGroupTimeline) {
+            const localTime = (globalTime - planeGroupTimeline.startTime()) * planeGroupTimeline.timeScale();
+
+            planeGroupTimeline.timeScale(multiplier);
+
+            planeGroupTimeline.startTime(globalTime - (localTime / multiplier));
+            setPlaneCurrentSpeeds(prev => ({ ...prev, [activePlane]: speedNum }));
+        }
+    });
+
 
 
 
@@ -240,10 +302,56 @@ const Stage = ({ onNavigate }) => {
             <IntroBanner text="Level 1" />
 
 
+            {/*Speed Controls*/}
+            <div className="absolute fade-out flex flex-col text-center speedControls
+            top-[2.5cqi] left-[5cqb]
+            rounded-xl
+            overflow-hidden
+            w-[10cqi] h-[27.5cqb]
+            z-10
+            ">
+                <div className="text-[#FFFFFF]
+                bg-emerald-600
+                w-full h-4cqmin]
+                p-[1cqmin]
+                ">
+                    {activePlane}
+                </div>
+
+                {[600, 540, 480, 420, 360, 300].map((speedNum) => {
+                    const currentSpeed = planeCurrentSpeeds[activePlane] || 600;
+                    const isActive = currentSpeed === speedNum;
+
+                    //Simple hover no gsap for draft
+                    const activeStyles = "bg-blue-500 text-white font-bold";
+                    const inactiveStyles = "bg-slate-500 text-[#3b3a3a] hover:bg-slate-400";
+                    const themeStyles = isActive ? activeStyles : inactiveStyles;
+
+                    return (
+                        <button
+                            key={speedNum}
+                            className={`w-full h-[5cqmin] p-[1cqmin] speedText transition-colors duration-150 border-t border-slate-600/20 ${themeStyles}`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                speedChanged(e, speedNum);
+                            }}
+                        >
+                            {speedNum}kts
+                        </button>
+                    );
+                })}
+            </div>
+
+
+
+
+
+
+
 
             {/*Controls*/}
             <div className="absolute slide-in-element fade-out flex items-center
-                bottom-[5cqi] left-[5cqb]
+                bottom-[5cqi] left-[2.5cqb]
                 {/*border border-red-500*/}
                 overflow-hidden
                 w-[30cqi] h-[10cqb]
