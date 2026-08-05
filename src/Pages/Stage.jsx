@@ -12,7 +12,6 @@ import { tracks, startingConditions, calculateMotionPathProps, cycleTimelineSpee
 
 
 
-
 const Stage = ({ onNavigate }) => {
 
     // Global Animations
@@ -227,6 +226,10 @@ const Stage = ({ onNavigate }) => {
     });
 
 
+    const handleTrackSwitchTrigger = (planeKey) => {
+        console.log("TRACK SWITCHED");
+    };
+
 
 
     return (
@@ -312,7 +315,7 @@ const Stage = ({ onNavigate }) => {
             ">
                 <div className="text-[#FFFFFF]
                 bg-emerald-600
-                w-full h-4cqmin]
+                w-full h-[4cqmin]
                 p-[1cqmin]
                 ">
                     {activePlane}
@@ -342,10 +345,27 @@ const Stage = ({ onNavigate }) => {
                 })}
             </div>
 
-
-
-
-
+            {/*Switch Controls*/}
+            <div className="absolute fade-out text-center speedControls
+            top-[2.5cqi] left-[15cqb]
+            rounded-xl border border-red-800
+            overflow-hidden
+            w-[10cqi] h-[4cqb]
+            z-10
+            ">
+                <button className="text-[#FFFFFF]
+                bg-orange-400
+                w-full h-[4cqmin]
+                p-[1cqmin]
+                "
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleTrackSwitchTrigger(e, activePlane);
+                        }}
+                >
+                    Switch Track
+                </button>
+            </div>
 
 
 

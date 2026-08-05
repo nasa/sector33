@@ -1,19 +1,19 @@
 import {SVGComponent1, SVGComponent2, SVGComponent3, SVGComponent4, SVGComponent5, SVGComponent6} from '../../assets/resources/PathSVGs.jsx';
 
 export const tracks = {
-    trackAlpha: {
-        SvgComponent: SVGComponent2,
-    },
-    trackBeta: {
-        SvgComponent: SVGComponent4,
-    },
+    track1: { SvgComponent: SVGComponent1 },
+    track2: { SvgComponent: SVGComponent2 },
+    track3: { SvgComponent: SVGComponent3 },
+    track4: { SvgComponent: SVGComponent4 },
+    track5: { SvgComponent: SVGComponent5 },
+    track6: { SvgComponent: SVGComponent6 },
 };
 
 
 // Define initial setup for each track
 export const startingConditions = {
     planeAlpha: {
-        trackKey: "trackAlpha",
+        trackKey: "track2",
         planeId: ".plane-alpha",
         startPixel: "25_INIT_DESC",
         endPixel: "0_MOD",
@@ -23,7 +23,7 @@ export const startingConditions = {
         alignOrigin: [0.5, 0.5]
     },
     planeBeta: {
-        trackKey: "trackBeta",
+        trackKey: "track4",
         planeId: ".plane-beta",
         startPixel: "25_INIT_DESC",
         endPixel: "0_MOD",
