@@ -8,7 +8,14 @@ import { ReturnToMenuBtn, IntroBanner } from "../Components/UIComponents.jsx";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 gsap.registerPlugin(MotionPathPlugin);
 import {SVGComponent0, SVGComponentTest} from '../../assets/resources/PathSVGs.jsx';
-import { tracks, startingConditions, calculateMotionPathProps, cycleTimelineSpeed } from "../Components/SimConfig";
+import {
+    tracks,
+    startingConditions,
+    calculateMotionPathProps,
+    cycleTimelineSpeed,
+    resetTimelineSpeed
+} from "../Components/SimConfig";
+import { useTrackSwitching } from "../Components/TrackSwitching";
 
 
 
@@ -21,18 +28,37 @@ const Stage = ({ onNavigate }) => {
     const containerRef = useRef(null);
     const timelineRef = useRef(null);
 
+
+    // pathRefs.current[planeKey][trackKey] -> the <path> element of that track's SVG.
+    // Every track a plane *could* fly is mounted, so switching never has to wait
+    // for a React re-render to get a path element to animate along.
     const pathRefs = useRef({});
 
     const visibleTracksRef = useRef({});
-
     const trailTweenAddedRef = useRef({});
 
     // React state hooks for layout changes
     const [currentSpeedLabel, setCurrentSpeedLabel] = useState(1);
     const [activePlanes, setActivePlanes] = useState(["planeAlpha", "planeBeta"]);
-    const [visibleTracks, setVisibleTracks] = useState({});
     const [activePlane, setActivePlane] = useState("AAL12");
     const [planeCurrentSpeeds, setPlaneCurrentSpeeds] = useState({});
+
+    const [visibleTracks, setVisibleTracks] = useState({});
+
+    // All track ownership, trail visibility and switching lives here.
+    const {
+        planeTracks,
+        trailVisible,
+        switchNotice,
+        clearSwitchNotice,
+        buildAll,
+        switchTrack,
+        showTrail,
+        hideTrail,
+        hideAllTrails,
+        candidateTracks,
+        nextTrackFor
+    } = useTrackSwitching({ activePlanes, timelineRef, pathRefs });
 
     const { contextSafe } = useGSAP(() => {
         //On load animations
@@ -40,55 +66,15 @@ const Stage = ({ onNavigate }) => {
         animateIn();
         gsap.to('.speedControls', { autoAlpha: 0, duration:0});
 
-
-        if (timelineRef.current) timelineRef.current.kill();
-        timelineRef.current = gsap.timeline({ paused: true });
-
-        activePlanes.forEach((planeKey) => {
-            const config = startingConditions[planeKey];
-            const track = tracks[config.trackKey];
-            const pathElement = pathRefs.current[planeKey];
-
-            if (pathElement && track) {
-                const totalLength = pathElement.getTotalLength();
-                const motionProps = calculateMotionPathProps(config, track.SvgComponent, totalLength);
-                const initialOffset = totalLength * (1 - motionProps.startProgress);
-
-                const planeGroupTimeline = gsap.timeline({ id: planeKey });
-
-                gsap.set(pathElement, {
-                    strokeDasharray: totalLength,
-                    strokeDashoffset: initialOffset,
-                    opacity: 0
-                });
-
-                planeGroupTimeline.to(config.planeId, {
-                    motionPath: {
-                        path: pathElement,
-                        align: pathElement,
-                        alignOrigin: motionProps.alignOrigin,
-                        autoRotate: motionProps.autoRotate,
-                        start: motionProps.startProgress,
-                        end: motionProps.endProgress
-                    },
-                    duration: motionProps.duration,
-                    ease: motionProps.ease
-                }, 0);
-
-                timelineRef.current.add(planeGroupTimeline, 0);
-            }
-        });
-
-
-        activePlanes.forEach((planeKey) => {
-            if (visibleTracksRef.current[planeKey]) {
-                revealTrail(planeKey);
-            }
-        });
-
-        timelineRef.current.progress(0.0001);
+        buildAll();
     }, { scope: containerRef, dependencies: [activePlanes] });
 
+    // Let a switch message fade out on its own rather than sticking around.
+    useEffect(() => {
+        if (!switchNotice) return undefined;
+        const timer = setTimeout(clearSwitchNotice, 3000);
+        return () => clearTimeout(timer);
+    }, [switchNotice]);
 
 
     // Page Leave Animations
@@ -109,10 +95,14 @@ const Stage = ({ onNavigate }) => {
         }
     });
 
+    // Reset rebuilds rather than restarts. A plane that switched track has its new
+    // leg spliced into the master at the moment of the switch, so a plain
+    // restart() would leave it parked until that time came round again.
     const resetPressed = contextSafe(function() {
-        if (timelineRef.current) {
-            timelineRef.current.restart().pause();
-        }
+        buildAll();
+        timelineRef.current.pause();
+        setPlaneCurrentSpeeds({});
+        setCurrentSpeedLabel(resetTimelineSpeed(timelineRef.current));
     });
 
     const speedPressed = contextSafe(function() {
@@ -122,68 +112,22 @@ const Stage = ({ onNavigate }) => {
         }
     });
 
-    const revealTrail = contextSafe((planeKey) => {
-        const config = startingConditions[planeKey];
-        const track = tracks[config.trackKey];
-        const pathElement = pathRefs.current[planeKey];
-
-        if (!pathElement || !track || !timelineRef.current) return;
-
-        if (!trailTweenAddedRef.current[planeKey]) {
-            const totalLength = pathElement.getTotalLength();
-            const motionProps = calculateMotionPathProps(config, track.SvgComponent, totalLength);
-            const finalOffset = totalLength * (1 - motionProps.endProgress);
-
-            const planeGroupTimeline = timelineRef.current.getById(planeKey);
-
-            if (planeGroupTimeline) {
-                planeGroupTimeline.to(pathElement, {
-                    strokeDashoffset: finalOffset,
-                    duration: motionProps.duration,
-                    ease: motionProps.ease
-                }, 0);
-            }
-
-            trailTweenAddedRef.current[planeKey] = true;
-        }
-
-        gsap.set(pathElement, { opacity: 1 });
-    });
-
-
 
     // Show/Hide Plane Trails
-    const hideTrail = contextSafe((planeKey) => {
-        const pathElement = pathRefs.current[planeKey];
-        if (!pathElement || !visibleTracksRef.current[planeKey]) return;
-
-        gsap.set(pathElement, { opacity: 0 });
-
-        visibleTracksRef.current[planeKey] = false;
-        setVisibleTracks(prev => ({ ...prev, [planeKey]: false }));
-    });
-
-    const hideAllTrails = contextSafe(() => {
-        activePlanes.forEach((planeKey) => {
-            if (visibleTracksRef.current[planeKey]) hideTrail(planeKey);
-        });
+    const hideEverything = contextSafe(() => {
+        hideAllTrails();
         gsap.to('.speedControls', { autoAlpha: 0, duration:0.25, ease:'easeOut' });
-
     });
 
 
     const handlePlaneClick = contextSafe((e, planeKey) => {
         e.stopPropagation();
         // If same plane clicked do nothing
-        if (visibleTracksRef.current[planeKey]) return;
+        if (trailVisible[planeKey]) return;
         // hide all other trails
         hideAllTrails();
         // reveal the trail of the plane clicked
-        revealTrail(planeKey);
-        // timeline
-        timelineRef.current.render(timelineRef.current.time(), true, true);
-        visibleTracksRef.current[planeKey] = true;
-        setVisibleTracks(prev => ({ ...prev, [planeKey]: true }));
+        showTrail(planeKey);
 
         // display speed controls
         displaySpeedControls(e, planeKey);
@@ -207,8 +151,9 @@ const Stage = ({ onNavigate }) => {
     };
 
 
+
     const speedChanged = contextSafe((e, speedNum) => {
-        if (!timelineRef.current) return;
+        if (!timelineRef.current || !activePlane) return;
 
         const globalTime = timelineRef.current.time();
         const multiplier = speedMultipliers[speedNum] || 1.0;
@@ -226,9 +171,14 @@ const Stage = ({ onNavigate }) => {
     });
 
 
-    const handleTrackSwitchTrigger = (planeKey) => {
-        console.log("TRACK SWITCHED");
-    };
+    const handleTrackSwitchTrigger = contextSafe((planeKey) => {
+        switchTrack(planeKey);
+    });
+
+
+    const activeTrackKey = activePlane ? planeTracks[activePlane] : null;
+    const pendingTrackKey = activePlane ? nextTrackFor(activePlane) : null;
+    const canSwitch = Boolean(activePlane && pendingTrackKey);
 
 
 
@@ -263,23 +213,30 @@ const Stage = ({ onNavigate }) => {
 
                 {activePlanes.map((planeKey) => {
                     const config = startingConditions[planeKey];
-                    const track = tracks[config.trackKey];
-                    const TrackSvg = track.SvgComponent;
                     const planeClass = config.planeId.replace('.', '');
-
-                    const pathEl = pathRefs.current[planeKey];
-                    const totalLength = pathEl ? pathEl.getTotalLength() : 0;
 
                     return (
                         <div key={planeKey} className="absolute inset-0 w-full h-full pointer-events-none">
 
-                            <TrackSvg
-                                ref={(svgElement) => { if (svgElement) pathRefs.current[planeKey] = svgElement; }}
-                                color="ef483f"
-                                style={{
-                                    "--length": totalLength
-                                }}
-                            />
+                            {/* Every track this plane can fly is mounted. Only the one it
+                                is currently on is ever given opacity, so the others are
+                                invisible ref-holders ready to be switched onto. */}
+                            {candidateTracks(planeKey).map((trackKey) => {
+                                const TrackSvg = tracks[trackKey].SvgComponent;
+
+                                return (
+                                    <div key={trackKey} className="absolute inset-0">
+                                        <TrackSvg
+                                            ref={(pathElement) => {
+                                                if (!pathElement) return;
+                                                if (!pathRefs.current[planeKey]) pathRefs.current[planeKey] = {};
+                                                pathRefs.current[planeKey][trackKey] = pathElement;
+                                            }}
+                                            color="ef483f"
+                                        />
+                                    </div>
+                                );
+                            })}
 
                             <div className={`${planeClass} absolute pointer-events-auto cursor-pointer`}>
                                 <DiamondIconSVG
@@ -318,7 +275,7 @@ const Stage = ({ onNavigate }) => {
                 w-full h-[4cqmin]
                 p-[1cqmin]
                 ">
-                    {activePlane}
+                    {activePlane || "No plane"}
                 </div>
 
                 {[600, 540, 480, 420, 360, 300].map((speedNum) => {
@@ -350,21 +307,38 @@ const Stage = ({ onNavigate }) => {
             top-[2.5cqi] left-[15cqb]
             rounded-xl border border-red-800
             overflow-hidden
-            w-[10cqi] h-[4cqb]
+            w-[14cqi]
             z-10
             ">
-                <button className="text-[#FFFFFF]
-                bg-orange-400
+                <button className={`text-[#FFFFFF]
                 w-full h-[4cqmin]
                 p-[1cqmin]
-                "
+                ${canSwitch ? "bg-orange-400 hover:bg-orange-300" : "bg-slate-600 cursor-not-allowed"}
+                `}
+                        disabled={!canSwitch}
                         onClick={(e) => {
                             e.stopPropagation();
-                            handleTrackSwitchTrigger(e, activePlane);
+                            handleTrackSwitchTrigger(activePlane);
                         }}
                 >
-                    Switch Track
+                    {canSwitch
+                        ? `Switch to ${tracks[pendingTrackKey]?.label || pendingTrackKey}`
+                        : "Switch Track"}
                 </button>
+
+                {activeTrackKey && (
+                    <div className="bg-slate-800 text-[#FFFFFF] w-full p-[1cqmin] text-[1.5cqmin]">
+                        On {tracks[activeTrackKey]?.label || activeTrackKey}
+                    </div>
+                )}
+
+                {switchNotice && (
+                    <div className={`w-full p-[1cqmin] text-[1.5cqmin] ${switchNotice.ok ? "bg-emerald-700 text-white" : "bg-red-800 text-white"}`}>
+                        {switchNotice.ok
+                            ? `Switched to ${tracks[switchNotice.to]?.label || switchNotice.to}`
+                            : switchNotice.reason}
+                    </div>
+                )}
             </div>
 
 
