@@ -1,32 +1,43 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 gsap.registerPlugin(useGSAP);
 import { globalAnimations } from "../Components/globalAnimations.jsx";
 import { PlayIconSVG, PauseIconSVG, ResetIconSVG, SpeedIconSVG, DiamondIconSVG } from "../../assets/resources/IconSVGs.jsx";
-import { ReturnToMenuBtn, IntroBanner } from "../Components/UIComponents.jsx";
+import { ReturnToMenuBtn, IntroBanner, ProximityWarning, LevelCompleteModal } from "../Components/UIComponents.jsx";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 gsap.registerPlugin(MotionPathPlugin);
 import {SVGComponent0, SVGComponentTest} from '../../assets/resources/PathSVGs.jsx';
 import {
     tracks,
-    startingConditions,
-    calculateMotionPathProps,
     cycleTimelineSpeed,
-    resetTimelineSpeed
+    resetTimelineSpeed,
+    DEFAULT_PLANE_COLOR
 } from "../Components/SimConfig";
 import { useTrackSwitching } from "../Components/TrackSwitching";
+import { getLevelConfig, getNextLevelId, activePlanesFor } from "../Components/LevelConfig.jsx";
+import { useCollisionTracking } from "../Components/collisionTracking.jsx";
+import { useFinishTracking } from "../Components/FinishTracking.jsx";
+import { evaluateScore } from "../Components/ScoreConfig.jsx";
 
 
 
-const Stage = ({ onNavigate }) => {
+const Stage = ({ onNavigate, levelId }) => {
 
     // Global Animations
     const { animateIn, animateOut, handleMouseEnter, handleMouseLeave, introBannerSlideInOut } = globalAnimations();
 
+    const levelConfig = getLevelConfig(levelId);
+
     // References to DOM elements
     const containerRef = useRef(null);
     const timelineRef = useRef(null);
+
+    // Real time stopwatch used to score the run, kept as refs so the GSAP
+    // onComplete callback always reads the live value rather than a stale closure.
+    const runStartRef = useRef(null);
+    const elapsedMsRef = useRef(0);
+    const isPlayingRef = useRef(false);
 
 
     // pathRefs.current[planeKey][trackKey] -> the <path> element of that track's SVG.
@@ -37,11 +48,17 @@ const Stage = ({ onNavigate }) => {
     const visibleTracksRef = useRef({});
     const trailTweenAddedRef = useRef({});
 
+    // Derived straight from levelConfig every render, rather than mirrored into its
+    // own state, so it can never lag a render behind when levelId changes (a stale
+    // planeKey here crashes the render, since JSX looks it up in levelConfig).
+    const activePlanes = useMemo(() => activePlanesFor(levelConfig), [levelConfig]);
+
     // React state hooks for layout changes
     const [currentSpeedLabel, setCurrentSpeedLabel] = useState(1);
-    const [activePlanes, setActivePlanes] = useState(["planeAlpha", "planeBeta"]);
     const [activePlane, setActivePlane] = useState("AAL12");
     const [planeCurrentSpeeds, setPlaneCurrentSpeeds] = useState({});
+    const [score, setScore] = useState(null);
+    const [displayElapsedSeconds, setDisplayElapsedSeconds] = useState(0);
 
     const [visibleTracks, setVisibleTracks] = useState({});
 
@@ -57,8 +74,76 @@ const Stage = ({ onNavigate }) => {
         hideTrail,
         hideAllTrails,
         candidateTracks,
-        nextTrackFor
-    } = useTrackSwitching({ activePlanes, timelineRef, pathRefs });
+        nextTrackFor,
+        getPlanePositions,
+        extendPlaneTo,
+        rebuildPlanePaths
+    } = useTrackSwitching({ activePlanes, timelineRef, pathRefs, startingConditions: levelConfig.startingConditions });
+
+    // Warns when any two planes cross the level's separation distance, and keeps a
+    // sticky flag for scoring once separation has ever been lost.
+    const { tooClose, everTooCloseRef, resetCollisionState } = useCollisionTracking({
+        activePlanes,
+        getPlanePositions,
+        separationPx: levelConfig.separationPx
+    });
+
+    // Clear the previous run's score and stopwatch whenever a different level is selected.
+    useEffect(() => {
+        runStartRef.current = null;
+        elapsedMsRef.current = 0;
+        isPlayingRef.current = false;
+        setDisplayElapsedSeconds(0);
+        setScore(null);
+        resetCollisionState();
+    }, [levelId]);
+
+    // Drives the elapsed time readout by the controls. Reads the master timeline's
+    // own clock so the readout speeds up along with the timeScale speed button,
+    // separate from the wall-clock stopwatch used for scoring below.
+    useEffect(() => {
+        let rafId;
+        const tick = () => {
+            if (isPlayingRef.current && timelineRef.current) {
+                setDisplayElapsedSeconds(timelineRef.current.time());
+            }
+            rafId = requestAnimationFrame(tick);
+        };
+        rafId = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(rafId);
+    }, []);
+
+    // Scores the run once every plane has come to rest. Uses real wall-clock time
+    // (not the timeline's own clock) so using the speed button to finish faster
+    // in real life actually earns a better score.
+    const handleLevelComplete = () => {
+        const now = Date.now();
+        const totalMs = elapsedMsRef.current + (runStartRef.current ? now - runStartRef.current : 0);
+        runStartRef.current = null;
+        isPlayingRef.current = false;
+        elapsedMsRef.current = totalMs;
+        // Every plane has stopped on its slot by the time this fires, so the sim
+        // can be frozen without cutting a plane short of the lineup
+        if (timelineRef.current) {
+            setDisplayElapsedSeconds(timelineRef.current.time());
+            timelineRef.current.pause();
+        }
+
+        setScore(evaluateScore({
+            completed: true,
+            everTooClose: everTooCloseRef.current,
+            elapsedSeconds: totalMs / 1000,
+            idealTimeSeconds: levelConfig.idealTimeSeconds
+        }));
+    };
+
+    // Lines planes up past MOD as they arrive, and ends the level once they have all stopped.
+    const { resetFinishTracking } = useFinishTracking({
+        activePlanes,
+        getPlanePositions,
+        extendPlaneTo,
+        onAllPlanesFinished: handleLevelComplete
+    });
 
     const { contextSafe } = useGSAP(() => {
         //On load animations
@@ -68,6 +153,31 @@ const Stage = ({ onNavigate }) => {
 
         buildAll();
     }, { scope: containerRef, dependencies: [activePlanes] });
+
+    // Watched rather than called inline so the observer below always runs the current one
+    const rebuildPlanePathsRef = useRef(rebuildPlanePaths);
+    rebuildPlanePathsRef.current = rebuildPlanePaths;
+
+    // Rebuild the motion paths whenever the canvas changes size, otherwise the planes
+    // keep flying the pixel coordinates baked in at the previous size and drift off track.
+    useEffect(() => {
+        const element = containerRef.current;
+        if (!element || typeof ResizeObserver === "undefined") return undefined;
+
+        let frame;
+        const observer = new ResizeObserver(() => {
+            // Dragging a window edge fires this continuously, so collapse the burst
+            // into a single rebuild on the next frame.
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => rebuildPlanePathsRef.current());
+        });
+
+        observer.observe(element);
+        return () => {
+            observer.disconnect();
+            cancelAnimationFrame(frame);
+        };
+    }, []);
 
     // Let a switch message fade out on its own rather than sticking around.
     useEffect(() => {
@@ -82,16 +192,30 @@ const Stage = ({ onNavigate }) => {
         animateOut(() => onNavigate('MainMenu'), '.fade-out');
     };
 
+    const nextLevelId = getNextLevelId(levelConfig.id);
+
+    // Level complete popup actions
+    const nextLevelPressed = () => onNavigate('Stage', nextLevelId);
+    const restartLevelPressed = () => resetPressed();
+
     // Control Buttons (Standard syntax)
     const playPressed = contextSafe(function() {
         if (timelineRef.current) {
+            if (!runStartRef.current) runStartRef.current = Date.now();
+            isPlayingRef.current = true;
             timelineRef.current.play();
         }
     });
 
     const pausePressed = contextSafe(function() {
         if (timelineRef.current) {
+            if (runStartRef.current) {
+                elapsedMsRef.current += Date.now() - runStartRef.current;
+                runStartRef.current = null;
+            }
+            isPlayingRef.current = false;
             timelineRef.current.pause();
+            setDisplayElapsedSeconds(timelineRef.current.time());
         }
     });
 
@@ -103,6 +227,14 @@ const Stage = ({ onNavigate }) => {
         timelineRef.current.pause();
         setPlaneCurrentSpeeds({});
         setCurrentSpeedLabel(resetTimelineSpeed(timelineRef.current));
+
+        runStartRef.current = null;
+        elapsedMsRef.current = 0;
+        isPlayingRef.current = false;
+        setDisplayElapsedSeconds(0);
+        setScore(null);
+        resetCollisionState();
+        resetFinishTracking();
     });
 
     const speedPressed = contextSafe(function() {
@@ -212,8 +344,9 @@ const Stage = ({ onNavigate }) => {
 
 
                 {activePlanes.map((planeKey) => {
-                    const config = startingConditions[planeKey];
+                    const config = levelConfig.startingConditions[planeKey];
                     const planeClass = config.planeId.replace('.', '');
+                    const planeColor = config.color || DEFAULT_PLANE_COLOR;
 
                     return (
                         <div key={planeKey} className="absolute inset-0 w-full h-full pointer-events-none">
@@ -232,7 +365,7 @@ const Stage = ({ onNavigate }) => {
                                                 if (!pathRefs.current[planeKey]) pathRefs.current[planeKey] = {};
                                                 pathRefs.current[planeKey][trackKey] = pathElement;
                                             }}
-                                            color="ef483f"
+                                            color={planeColor}
                                         />
                                     </div>
                                 );
@@ -240,7 +373,7 @@ const Stage = ({ onNavigate }) => {
 
                             <div className={`${planeClass} absolute pointer-events-auto cursor-pointer`}>
                                 <DiamondIconSVG
-                                    color="00FFFF"
+                                    color={planeColor}
                                     onClick={(e) => handlePlaneClick(e, planeKey)}
                                 />
                             </div>
@@ -259,21 +392,39 @@ const Stage = ({ onNavigate }) => {
             />
 
             {/*Intro Banner SVG*/}
-            <IntroBanner text="Level 1" />
+            <IntroBanner text={levelConfig.introText} />
+
+            {/*Proximity Warning*/}
+            <ProximityWarning visible={tooClose} />
+
+            {/*Level Complete Popup*/}
+            <LevelCompleteModal
+                levelTitle={levelConfig.introText}
+                score={score}
+                elapsedSeconds={displayElapsedSeconds}
+                hasNextLevel={Boolean(nextLevelId)}
+                onNextLevel={nextLevelPressed}
+                onRestart={restartLevelPressed}
+                onMainMenu={menuPressed}
+            />
 
 
             {/*Speed Controls*/}
+            {/* Height is left to the content so every speed option fits, and the
+                offsets use cqi across and cqb down so the panel keeps its gap to
+                the switch panel at any canvas size. */}
             <div className="absolute fade-out flex flex-col text-center speedControls
-            top-[2.5cqi] left-[5cqb]
+            top-[2.5cqb] left-[2.5cqi]
             rounded-xl
             overflow-hidden
-            w-[10cqi] h-[27.5cqb]
+            w-[12cqi]
             z-10
             ">
                 <div className="text-[#FFFFFF]
                 bg-emerald-600
-                w-full h-[4cqmin]
-                p-[1cqmin]
+                w-full
+                py-[1cqmin]
+                text-[1.8cqmin]
                 ">
                     {activePlane || "No plane"}
                 </div>
@@ -290,7 +441,7 @@ const Stage = ({ onNavigate }) => {
                     return (
                         <button
                             key={speedNum}
-                            className={`w-full h-[5cqmin] p-[1cqmin] speedText transition-colors duration-150 border-t border-slate-600/20 ${themeStyles}`}
+                            className={`w-full py-[1cqmin] text-[1.8cqmin] speedText transition-colors duration-150 border-t border-slate-600/20 ${themeStyles}`}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 speedChanged(e, speedNum);
@@ -303,16 +454,19 @@ const Stage = ({ onNavigate }) => {
             </div>
 
             {/*Switch Controls*/}
+            {/* Sits clear of the speed panel, which ends at 14.5cqi, and is wide
+                enough for the longest track label without the button clipping. */}
             <div className="absolute fade-out text-center speedControls
-            top-[2.5cqi] left-[15cqb]
+            top-[2.5cqb] left-[16cqi]
             rounded-xl border border-red-800
             overflow-hidden
-            w-[14cqi]
+            w-[18cqi]
             z-10
             ">
                 <button className={`text-[#FFFFFF]
-                w-full h-[4cqmin]
-                p-[1cqmin]
+                w-full
+                py-[1cqmin] px-[1.5cqmin]
+                text-[1.6cqmin] leading-tight
                 ${canSwitch ? "bg-orange-400 hover:bg-orange-300" : "bg-slate-600 cursor-not-allowed"}
                 `}
                         disabled={!canSwitch}
@@ -344,11 +498,12 @@ const Stage = ({ onNavigate }) => {
 
 
             {/*Controls*/}
+            {/* Height is left to the content: a fixed height plus overflow-hidden
+                clipped the bottom of the round buttons, whose 7.5cqmin plus padding
+                comes to 11.5cqmin. */}
             <div className="absolute slide-in-element fade-out flex items-center
-                bottom-[5cqi] left-[2.5cqb]
-                {/*border border-red-500*/}
-                overflow-hidden
-                w-[30cqi] h-[10cqb]
+                bottom-[5cqb] left-[2.5cqi]
+                w-[30cqi]
                 p-[2cqmin]
                 gap-[2cqmin]
                 z-10
@@ -422,6 +577,17 @@ const Stage = ({ onNavigate }) => {
                     </div>
 
                 </button>
+
+                {/*Elapsed Time Readout*/}
+                <div className="text-[#FFFFFF] font-mono
+                border border-blue-500 bg-slate-500 rounded-full
+                w-[7.5cqmin] h-[7.5cqmin]
+                flex items-center justify-center
+                ">
+                    <span className="text-[1.6cqmin]">
+                        {displayElapsedSeconds.toFixed(1)}s
+                    </span>
+                </div>
             </div>
 
         </div>

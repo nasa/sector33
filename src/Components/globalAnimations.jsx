@@ -50,8 +50,12 @@ export const globalAnimations = () => {
     });
 
     // Intro Banner Slide in and Out Animation, no dot selectors
+    // Resets to its starting position/visibility first, since the previous run
+    // leaves it faded out and off screen, and this can be called again on the
+    // same mounted page (e.g. switching levels on Stage without remounting).
     const introBannerSlideInOut = contextSafe(() => {
         gsap.timeline()
+            .set(".intro", {autoAlpha: 1, xPercent: -100})
             .to(".intro", {xPercent: 100, duration: 1.5, ease: "power4.out"}, 0.5)
             .to(".intro", {xPercent: -100, duration: 1.5, ease: "power4.in"}, 5)
             .to(".intro", {autoAlpha: 0, duration: 0.5});

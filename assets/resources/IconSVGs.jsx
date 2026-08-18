@@ -357,15 +357,17 @@ const SpeedIconSVG = (props) => (
 );
 
 
-const DiamondIconSVG = ({ className = "", color, ...props }) => {
+// size defaults to a container unit so the plane marker scales with the canvas
+// instead of staying a fixed pixel size as the window changes
+const DiamondIconSVG = ({ className = "", color, size = "4.5cqmin", ...props }) => {
     return (
         <svg
             className={className}
             style={{
                 color: color ? `#${color}` : "currentColor",
                 overflow: "visible",
-                width: "32px",
-                height: "32px"
+                width: size,
+                height: size
             }}
             viewBox="-10 -20 20 40"
             {...props}

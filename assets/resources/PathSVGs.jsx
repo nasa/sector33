@@ -137,7 +137,10 @@ SVGComponent1.displayName = "SVGComponent1";
 // Internal Component Breakpoints with Waypoint Reference Names
 SVGComponent1.breakpoints = {
     "10_END": 0.00,
+    "FINISH_3": 17.35,
+    "FINISH_2": 69.43,
     "5_END": 86.80,
+    "FINISH_1": 121.51,
     "0_MOD": 173.59,
     "5_DESC": 251.85,
     "10_DESC": 336.32,
@@ -201,7 +204,10 @@ const SVGComponent2 = forwardRef((props, ref) => {
 
 SVGComponent2.breakpoints = {
     "10_END": 0.00,
+    "FINISH_3": 17.35,
+    "FINISH_2": 69.43,
     "5_END": 86.80,
+    "FINISH_1": 121.51,
     "0_MOD": 173.59,
     "5_HORIZONTAL": 260.30,
     "10_HORIZONTAL": 347.10,
@@ -265,7 +271,10 @@ const SVGComponent3 = forwardRef((props, ref) => {
 });
 SVGComponent3.breakpoints = {
     "10_END": 0.00,
+    "FINISH_3": 17.35,
+    "FINISH_2": 69.43,
     "5_END": 86.80,
+    "FINISH_1": 121.51,
     "0_MOD": 173.59,
     "5_DESC": 251.81,
     "10_DESC": 336.26,
@@ -333,7 +342,10 @@ const SVGComponent4 = forwardRef((props, ref) => {
 
 SVGComponent4.breakpoints = {
     "10_END": 0.00,
+    "FINISH_3": 17.35,
+    "FINISH_2": 69.43,
     "5_END": 86.80,
+    "FINISH_1": 121.51,
     "0_MOD": 173.59,
     "5_HORIZONTAL": 260.30,
     "10_HORIZONTAL": 347.10,
@@ -397,7 +409,10 @@ const SVGComponent5 = forwardRef((props, ref) => {
 
 SVGComponent5.breakpoints = {
     "10_END": 0.00,
+    "FINISH_3": 17.35,
+    "FINISH_2": 69.43,
     "5_END": 86.80,
+    "FINISH_1": 121.51,
     "SEP_1": 121.51,
     "0_MOD": 173.59,
     "5_HORIZONTAL": 260.30,
@@ -462,7 +477,10 @@ const SVGComponent6 = forwardRef((props, ref) => {
 });
 SVGComponent6.breakpoints = {
     "10_END": 0.00,
+    "FINISH_3": 17.35,
+    "FINISH_2": 69.43,
     "5_END": 86.80,
+    "FINISH_1": 121.51,
     "SEP_1": 121.51,
     "0_MOD": 173.59,
     "5_HORIZONTAL": 260.30,

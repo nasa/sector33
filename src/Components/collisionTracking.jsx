@@ -1,26 +1,75 @@
-// Track Distances between all active planes and display warning if within close range
-// This script will track all active planes and their respective distances between each other
-import {getPlanePositions, useTrackSwitching} from "./TrackSwitching.jsx";
-import {useState} from "react";
+// Track pixel distance between every pair of active planes and warn when any pair
+// is too close, same pixel-distance approach as measureSwitchGap in TrackSwitching.jsx
+import { useEffect, useRef, useState } from "react";
 
-// Needs active planes and their positions
-export const collisionTracking = (planeConfig) => {
-    // Simple Bool state if planes ever got too close (stays active)
-    const [x1, x2] = useState({});
+export const DEFAULT_SEPARATION_PX = 34.72;
 
-    // Second bool state for warning display (can deactivate once not close)
-    const [y1, y2] = useState({});
+// activePlanes - keys currently in sim
+// getPlanePositions - from useTrackSwitching, returns { [planeKey]: { x, y, ... } }
+// separationPx - radius around each plane that another plane may not enter
+export const useCollisionTracking = ({ activePlanes, getPlanePositions, separationPx = DEFAULT_SEPARATION_PX }) => {
+    const [closePairs, setClosePairs] = useState([]);
+    const [everTooClose, setEverTooClose] = useState(false);
 
-    const {
-        getPlanePositions
-    } = useTrackSwitching({ activePlanes, timelineRef, pathRefs });
+    // Kept alongside the state so the level-complete handler can read the live
+    // value without depending on a possibly stale render closure.
+    const everTooCloseRef = useRef(false);
 
+    const getPlanePositionsRef = useRef(getPlanePositions);
+    getPlanePositionsRef.current = getPlanePositions;
 
-    // return states of warning and got too close
+    const rafRef = useRef(null);
+
+    useEffect(() => {
+        if (activePlanes.length < 2) {
+            setClosePairs([]);
+            return undefined;
+        }
+
+        const tick = () => {
+            const positions = getPlanePositionsRef.current();
+            const pairs = [];
+
+            for (let i = 0; i < activePlanes.length; i += 1) {
+                for (let j = i + 1; j < activePlanes.length; j += 1) {
+                    const a = positions[activePlanes[i]];
+                    const b = positions[activePlanes[j]];
+                    if (!a || !b) continue;
+
+                    // Straight line distance, so the threshold acts as a radius around
+                    // each plane rather than a gap measured along a single track
+                    const gap = Math.hypot(a.x - b.x, a.y - b.y);
+                    if (gap < separationPx) {
+                        pairs.push({ planeA: activePlanes[i], planeB: activePlanes[j], gap });
+                    }
+                }
+            }
+
+            setClosePairs(pairs);
+            if (pairs.length > 0 && !everTooCloseRef.current) {
+                everTooCloseRef.current = true;
+                setEverTooClose(true);
+            }
+
+            rafRef.current = requestAnimationFrame(tick);
+        };
+
+        rafRef.current = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(rafRef.current);
+    }, [activePlanes, separationPx]);
+
+    // Clears the sticky too-close flag, used when a level is reset or restarted
+    const resetCollisionState = () => {
+        everTooCloseRef.current = false;
+        setEverTooClose(false);
+        setClosePairs([]);
+    };
+
     return {
-        // tstszxts
+        closePairs,
+        tooClose: closePairs.length > 0,
+        everTooClose,
+        everTooCloseRef,
+        resetCollisionState
     };
 };
-
-
-

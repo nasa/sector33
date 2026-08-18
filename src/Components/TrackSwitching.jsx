@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { tracks, startingConditions, resolvePixel, DEFAULT_SPEED } from "./SimConfig";
+import { tracks, startingConditions as defaultStartingConditions, resolvePixel, DEFAULT_SPEED } from "./SimConfig";
 
 // Max pixels two positions can differ and still count as same point
 export const CONTINUITY_TOLERANCE = 2;
@@ -64,7 +64,7 @@ export const measureSwitchGap = (fromPathElement, fromPixel, toPathElement, toPi
 };
 
 // Next item in switchable list
-export const nextTrackKey = (planeKey, currentTrackKey) => {
+export const nextTrackKey = (startingConditions, planeKey, currentTrackKey) => {
     const config = startingConditions[planeKey];
     const candidates = config?.switchableTracks || [];
     if (candidates.length < 2) return null;
@@ -84,7 +84,8 @@ const breakpointsFor = (trackKey) => tracks[trackKey]?.SvgComponent?.breakpoints
 // pathRefs -  pathRefs.current[planeKey][trackKey] -> <path> element
 
 // Actually switches the track
-export const useTrackSwitching = ({ activePlanes, timelineRef, pathRefs }) => {
+// startingConditions - per-level plane config (see LevelConfig.jsx), defaults to SimConfig's
+export const useTrackSwitching = ({ activePlanes, timelineRef, pathRefs, startingConditions = defaultStartingConditions }) => {
     const [planeTracks, setPlaneTracks] = useState(() => {
         const initial = {};
         Object.keys(startingConditions).forEach((planeKey) => {
@@ -98,6 +99,21 @@ export const useTrackSwitching = ({ activePlanes, timelineRef, pathRefs }) => {
     const trailVisibleRef = useRef({});
     const [trailVisible, setTrailVisible] = useState({});
     const [switchNotice, setSwitchNotice] = useState(null);
+
+    // A returning plane key (e.g. planeAlpha reused across levels) would otherwise
+    // keep whatever track it was on in the previous level, since this state only
+    // seeds itself once on mount.
+    useEffect(() => {
+        const initial = {};
+        Object.keys(startingConditions).forEach((planeKey) => {
+            initial[planeKey] = startingConditions[planeKey].trackKey;
+        });
+        planeTracksRef.current = initial;
+        setPlaneTracks(initial);
+
+        trailVisibleRef.current = {};
+        setTrailVisible({});
+    }, [startingConditions]);
 
     const setPlaneTrack = (planeKey, trackKey) => {
         planeTracksRef.current = { ...planeTracksRef.current, [planeKey]: trackKey };
@@ -113,7 +129,8 @@ export const useTrackSwitching = ({ activePlanes, timelineRef, pathRefs }) => {
 
 
     // Build a sub-timeline with motionPath tween and trail draw anchored locally so it overides config start ontop of plane
-    const buildPlaneSub = (planeKey, trackKey, fromPixel) => {
+    // toPixel overrides the configured endPixel, used to fly a plane past its normal finish point
+    const buildPlaneSub = (planeKey, trackKey, fromPixel, toPixel) => {
         const config = startingConditions[planeKey];
         const pathElement = pathRefs.current[planeKey]?.[trackKey];
         if (!config || !pathElement) return null;
@@ -123,7 +140,8 @@ export const useTrackSwitching = ({ activePlanes, timelineRef, pathRefs }) => {
 
         const startPixel =
             typeof fromPixel === "number" ? fromPixel : resolvePixel(breakpoints, config.startPixel);
-        const endPixel = resolvePixel(breakpoints, config.endPixel);
+        const endPixel =
+            typeof toPixel === "number" ? toPixel : resolvePixel(breakpoints, config.endPixel);
 
         const speed = config.speed || DEFAULT_SPEED;
         const duration = Math.abs(endPixel - startPixel) / speed;
@@ -259,7 +277,7 @@ export const useTrackSwitching = ({ activePlanes, timelineRef, pathRefs }) => {
         if (!master || !runtime) return refuse("Plane is not airborne yet");
 
         const fromTrackKey = runtime.trackKey;
-        const toTrackKey = nextTrackKey(planeKey, fromTrackKey);
+        const toTrackKey = nextTrackKey(startingConditions, planeKey, fromTrackKey);
         if (!toTrackKey) return refuse("No alternate track configured");
 
         const toPathElement = pathRefs.current[planeKey]?.[toTrackKey];
@@ -315,6 +333,61 @@ export const useTrackSwitching = ({ activePlanes, timelineRef, pathRefs }) => {
         return result;
     };
 
+    // Splice a plane onto a leg carrying it past its configured endpoint to a named
+    // waypoint on the track it is already flying, keeping its current speed
+    const extendPlaneTo = (planeKey, waypointName) => {
+        const master = timelineRef.current;
+        const runtime = runtimeRef.current[planeKey];
+        if (!master || !runtime) return;
+
+        const targetPixel = resolvePixel(breakpointsFor(runtime.trackKey), waypointName);
+        const fromPixel = currentPixelOf(planeKey);
+        const masterTime = master.time();
+        const planeTimeScale = runtime.sub.timeScale();
+
+        runtime.sub.kill();
+
+        const nextSub = buildPlaneSub(planeKey, runtime.trackKey, fromPixel, targetPixel);
+        if (!nextSub) return;
+
+        master.add(nextSub, masterTime);
+        nextSub.timeScale(planeTimeScale);
+
+        // force render so a paused timeline still shows the plane on its new leg
+        master.render(masterTime, true, true);
+    };
+
+    // MotionPath resolves the path into screen coordinates when a tween is built, so
+    // once the canvas changes size those baked coordinates no longer line up with the
+    // track and the planes sit off it. Rebuild every plane's current leg in place,
+    // from where it is now to where it was already heading, so nothing jumps or
+    // loses its remaining flight time.
+    const rebuildPlanePaths = () => {
+        const master = timelineRef.current;
+        if (!master) return;
+
+        const masterTime = master.time();
+
+        activePlanes.forEach((planeKey) => {
+            const runtime = runtimeRef.current[planeKey];
+            if (!runtime) return;
+
+            const fromPixel = currentPixelOf(planeKey);
+            const toPixel = runtime.endPixel;
+            const planeTimeScale = runtime.sub.timeScale();
+
+            runtime.sub.kill();
+
+            const nextSub = buildPlaneSub(planeKey, runtime.trackKey, fromPixel, toPixel);
+            if (!nextSub) return;
+
+            master.add(nextSub, masterTime);
+            nextSub.timeScale(planeTimeScale);
+        });
+
+        master.render(masterTime, true, true);
+    };
+
     // Show Trails
     const showTrail = (planeKey) => {
         const runtime = runtimeRef.current[planeKey];
@@ -349,13 +422,15 @@ export const useTrackSwitching = ({ activePlanes, timelineRef, pathRefs }) => {
 
         // actions
         switchTrack,
+        extendPlaneTo,
+        rebuildPlanePaths,
         showTrail,
         hideTrail,
         hideAllTrails,
 
         // helpers the view and future systems need
         candidateTracks,
-        nextTrackFor: (planeKey) => nextTrackKey(planeKey, planeTracksRef.current[planeKey]),
+        nextTrackFor: (planeKey) => nextTrackKey(startingConditions, planeKey, planeTracksRef.current[planeKey]),
         currentPixelOf,
         getPlanePositions
     };

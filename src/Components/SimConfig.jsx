@@ -10,12 +10,17 @@ export const tracks = {
 };
 
 export const DEFAULT_SPEED = 2.899;
+
+// Fallback for a plane config with no color of its own, so a new plane is never
+// drawn in the SVG default black against the dark stage
+export const DEFAULT_PLANE_COLOR = "FFFFFF";
 // Define initial setup for each track
 export const startingConditions = {
     planeAlpha: {
         trackKey: "track2",
         switchableTracks: ["track2", "track1"],
         planeId: ".plane-alpha",
+        color: "00FFFF",
         startPixel: "25_INIT_DESC",
         endPixel: "0_MOD",
         speed: DEFAULT_SPEED,
@@ -27,6 +32,7 @@ export const startingConditions = {
         trackKey: "track4",
         switchableTracks: ["track4", "track3"],
         planeId: ".plane-beta",
+        color: "FFB703",
         startPixel: "25_INIT_DESC",
         endPixel: "0_MOD",
         speed: DEFAULT_SPEED,
@@ -37,6 +43,7 @@ export const startingConditions = {
     planeGamma: {
         trackKey: "track5",
         planeId: ".plane-gamma",
+        color: "C084FC",
         startPixel: "30_INIT_DESC",
         endPixel: "0_MOD",
         speed: DEFAULT_SPEED,
