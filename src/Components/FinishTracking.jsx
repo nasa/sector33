@@ -1,14 +1,21 @@
-// Watches for planes reaching MOD and lines them up behind each other. The first
-// plane in keeps flying to the furthest FINISH waypoint, each following plane stops
-// one slot nearer, and the last plane finishes at MOD as normal. The level is only
-// reported finished once every plane has come to rest on its slot.
+// This script checks for planes arriving at MOD and lines them up behind one another.
+// Each plane continues flying until the final plane reaches MOD
+// NOTE: This differs from the original logic of the sim where the level only scores when the last plane reaches MOD
+// The level can still be completed, but only ideal if they line up exactly at the same time. If any plane stops, then it's not perfect.
 import { useEffect, useRef } from "react";
 import { tracks, resolvePixel } from "./SimConfig.jsx";
 
 const MOD_WAYPOINT = "0_MOD";
 
-// The motion tween lands a hair past its target (173.59000000000003 rather than
-// 173.59), so an exact comparison would never register an arrival
+// Three ticks between each aircraft lining up at finish
+const PREFERRED_SLOT_PX = 52.08;
+
+export const finishSlotPixel = (modPixel, planeCount, slotsAhead) => {
+    if (slotsAhead <= 0) return modPixel;
+    const spacing = Math.min(PREFERRED_SLOT_PX, modPixel / (planeCount - 1));
+    return modPixel - slotsAhead * spacing;
+};
+
 const ARRIVAL_TOLERANCE_PX = 0.5;
 
 const pixelOf = (trackKey, waypoint) =>
@@ -23,19 +30,19 @@ const allPlanesAtRest = (activePlanes, positions, restPixels) =>
         return position.pixel <= restPixel + ARRIVAL_TOLERANCE_PX;
     });
 
-// activePlanes - keys currently in sim
-// getPlanePositions - from useTrackSwitching
-// extendPlaneTo(planeKey, waypointName) - from useTrackSwitching
-// onAllPlanesFinished - called once, when every plane has stopped moving
+// extendPlaneTo(planeKey, waypointName) is from useTrackSwitching
+// onAllPlanesFinished is called once, when every plane has stopped moving
 export const useFinishTracking = ({
     activePlanes,
     getPlanePositions,
     extendPlaneTo,
+    getElapsedSeconds,
     onAllPlanesFinished
 }) => {
     const arrivedRef = useRef(new Set());
 
-    // planeKey -> pixel that plane should come to rest on, its FINISH slot or MOD
+    // clock stops when last plane reaches MOD
+    const scoreTimeRef = useRef(null);
     const restPixelsRef = useRef({});
     const finishedRef = useRef(false);
 
@@ -45,12 +52,15 @@ export const useFinishTracking = ({
     extendRef.current = extendPlaneTo;
     const onAllRef = useRef(onAllPlanesFinished);
     onAllRef.current = onAllPlanesFinished;
+    const getElapsedRef = useRef(getElapsedSeconds);
+    getElapsedRef.current = getElapsedSeconds;
 
-    // Fresh arrival order whenever the level, and so its active planes, changes
+    // arrival order whenever the level or active planes changes
     useEffect(() => {
         arrivedRef.current = new Set();
         restPixelsRef.current = {};
         finishedRef.current = false;
+        scoreTimeRef.current = null;
     }, [activePlanes]);
 
     useEffect(() => {
@@ -72,26 +82,28 @@ export const useFinishTracking = ({
 
                     arrivedRef.current.add(planeKey);
 
-                    // One FINISH slot for every plane still inbound behind this one
+                    // One slot for every plane still inbound behind this one
                     const remaining = activePlanes.length - arrivedRef.current.size;
+                    const restPixel = finishSlotPixel(modPixel, activePlanes.length, remaining);
 
-                    if (remaining > 0) {
-                        const waypoint = `FINISH_${remaining}`;
-                        restPixelsRef.current[planeKey] = pixelOf(position.trackKey, waypoint);
-                        extendRef.current(planeKey, waypoint);
-                    } else {
-                        restPixelsRef.current[planeKey] = modPixel;
-                    }
+                    restPixelsRef.current[planeKey] = restPixel;
+
+                    // extendPlaneTo runs it through resolvePixel passing numbers straight through so the computed pixel needs no waypoint name
+                    if (remaining > 0) extendRef.current(planeKey, restPixel);
                 });
 
-                // Held open until the planes still gliding out to their slots land,
-                // so the level is not called finished with planes still moving
+                // Held open until the planes still going out to their slots so the level is not called finished with planes still moving
                 const everyPlaneArrived =
                     activePlanes.length > 0 && arrivedRef.current.size === activePlanes.length;
 
+                // Stamp the score the moment the lineup is complete then let the aircraft settle
+                if (everyPlaneArrived && scoreTimeRef.current === null) {
+                    scoreTimeRef.current = getElapsedRef.current ? getElapsedRef.current() : null;
+                }
+
                 if (everyPlaneArrived && allPlanesAtRest(activePlanes, positions, restPixelsRef.current)) {
                     finishedRef.current = true;
-                    onAllRef.current();
+                    onAllRef.current(scoreTimeRef.current);
                 }
             }
             rafId = requestAnimationFrame(tick);
@@ -100,11 +112,12 @@ export const useFinishTracking = ({
         return () => cancelAnimationFrame(rafId);
     }, [activePlanes]);
 
-    // Clears arrival order, used when a level is reset or restarted
+    // Clears arrival order (used when a level is reset or restarted)
     const resetFinishTracking = () => {
         arrivedRef.current = new Set();
         restPixelsRef.current = {};
         finishedRef.current = false;
+        scoreTimeRef.current = null;
     };
 
     return { resetFinishTracking };

@@ -1,28 +1,26 @@
 import * as React from "react";
-const ReturnSVG = (props) => (
-    <svg
-        viewBox="0 0 48 48"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        {...props}
-    >
-        <path
-            d="M12.9998 8L6 14L12.9998 21"
-            stroke="currentColor"
-            strokeWidth={4}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        />
-        <path
-            d="M6 14H28.9938C35.8768 14 41.7221 19.6204 41.9904 26.5C42.2739 33.7696 36.2671 40 28.9938 40H11.9984"
-            stroke="currentColor"
-            strokeWidth={4}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        />
-    </svg>
-);
+import hdsSpriteUrl from "@nasa-hds/core/assets/img/hds-sprite.svg?url";
 
+//HDS Icons as according to standard as well as custom Icons for special buttons and symbols as necessary
+const spriteIcon = (symbol) => {
+    const Icon = ({ className = "", ...props }) => (
+        <svg
+            className={className}
+            width="100%"
+            height="100%"
+            fill="currentColor"
+            aria-hidden="true"
+            focusable="false"
+            {...props}
+        >
+            <use href={`${hdsSpriteUrl}#${symbol}`}/>
+        </svg>
+    );
+    Icon.displayName = symbol;
+    return Icon;
+};
+
+const ReturnSVG = spriteIcon("arrow-chevron-left");
 
 const PlaneSVG = (props) => (
     <svg
@@ -86,51 +84,17 @@ const ExitSVG = (props) => (
     </svg>
 );
 
-const SettingsSVG = (props) => (
-    <svg
-        width="100%"
-        height="100%"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-    >
-        <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M12.7848 0.449982C13.8239 0.449982 14.7167 1.16546 14.9122 2.15495L14.9991 2.59495C15.3408 4.32442 17.1859 5.35722 18.9016 4.7794L19.3383 4.63233C20.3199 4.30175 21.4054 4.69358 21.9249 5.56605L22.7097 6.88386C23.2293 7.75636 23.0365 8.86366 22.2504 9.52253L21.9008 9.81555C20.5267 10.9672 20.5267 13.0328 21.9008 14.1844L22.2504 14.4774C23.0365 15.1363 23.2293 16.2436 22.7097 17.1161L21.925 18.4339C21.4054 19.3064 20.3199 19.6982 19.3382 19.3676L18.9017 19.2205C17.1859 18.6426 15.3408 19.6754 14.9991 21.405L14.9122 21.845C14.7167 22.8345 13.8239 23.55 12.7848 23.55H11.2152C10.1761 23.55 9.28331 22.8345 9.08781 21.8451L9.00082 21.4048C8.65909 19.6754 6.81395 18.6426 5.09822 19.2205L4.66179 19.3675C3.68016 19.6982 2.59465 19.3063 2.07505 18.4338L1.2903 17.1161C0.770719 16.2436 0.963446 15.1363 1.74956 14.4774L2.09922 14.1844C3.47324 13.0327 3.47324 10.9672 2.09922 9.8156L1.74956 9.52254C0.963446 8.86366 0.77072 7.75638 1.2903 6.8839L2.07508 5.56608C2.59466 4.69359 3.68014 4.30176 4.66176 4.63236L5.09831 4.77939C6.81401 5.35722 8.65909 4.32449 9.00082 2.59506L9.0878 2.15487C9.28331 1.16542 10.176 0.449982 11.2152 0.449982H12.7848ZM12 15.3C13.8225 15.3 15.3 13.8225 15.3 12C15.3 10.1774 13.8225 8.69998 12 8.69998C10.1774 8.69998 8.69997 10.1774 8.69997 12C8.69997 13.8225 10.1774 15.3 12 15.3Z"
-            fill="currentColor"
-        />
-    </svg>
-);
+const SettingsSVG = spriteIcon("settings");
 
-const SoundSVG = (props) => (
-    <svg
-        fill="none"
-        width="100%"
-        height="100%"
-        id="Layer_1"
-        xmlns="http://www.w3.org/2000/svg"
-        xmlnsXlink="http://www.w3.org/1999/xlink"
-        viewBox="0 0 512 512"
-        enableBackground="new 0 0 512 512"
-        xmlSpace="preserve"
-        {...props}
-    >
-        <path d="M426.7,256c0-71-43.4-131.8-105-157.5l-16.4,39.4C351.5,157.2,384,202.8,384,256c0,53.3-32.5,98.8-78.8,118.1l16.4,39.4 C383.3,387.8,426.7,327,426.7,256z M341.3,256c0-35.5-21.7-65.9-52.5-78.7l-16.4,39.4c15.4,6.4,26.2,21.6,26.2,39.4 c0,17.7-10.8,32.9-26.2,39.4l16.4,39.4C319.6,321.9,341.3,291.5,341.3,256z M354.5,19.7L338,59.1C415.1,91.2,469.3,167.2,469.3,256 c0,88.7-54.2,164.8-131.3,196.9l16.4,39.4C447,453.7,512,362.5,512,256C512,149.5,447,58.3,354.5,19.7z M0,149.3v213.3h85.3 L234.7,512V0L85.3,149.3H0z" />
-    </svg>
-);
+const SoundSVG = spriteIcon("sound-on");
 
 const DisplaySVG = (props) => (
     <svg
-        baseProfile="tiny"
-        id="Layer_1"
-        xmlns="http://www.w3.org/2000/svg"
-        xmlnsXlink="http://www.w3.org/1999/xlink"
-        x="0px"
-        y="0px"
+        width="100%"
+        height="100%"
         viewBox="-351 153 256 256"
-        xmlSpace="preserve"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="currentColor"
         {...props}
     >
         <g>
@@ -183,6 +147,7 @@ const AccessibilitySVG = (props) => (
         height="100%"
         viewBox="0 0 48 48"
         xmlns="http://www.w3.org/2000/svg"
+        fill="currentColor"
         {...props}
     >
         <title>{"accessibility-circle-solid"}</title>
@@ -238,7 +203,7 @@ const HelpSVG = (props) => (
         {...props}
     >
         <path
-            fill="#000000"
+            fill="currentColor"
             fillRule="evenodd"
             d="M8,16 C3.58172,16 0,12.4183 0,8 C0,3.58172 3.58172,0 8,0 C12.4183,0 16,3.58172 16,8 C16,12.4183 12.4183,16 8,16 Z M4.4325,6.19122 C4.4325,5.7729 4.57483,5.34907 4.8595,4.91974 C5.14417,4.49041 5.5595,4.13484 6.1055,3.85303 C6.6515,3.57121 7.28848,3.43033 8.01648,3.43033 C8.69315,3.43033 9.2905,3.54811 9.8085,3.78369 C10.3265,4.01927 10.7267,4.33961 11.009,4.74472 C11.2913,5.14983 11.4325,5.59017 11.4325,6.06573 C11.4325,6.44002 11.352,6.76805 11.191,7.04987 C11.03,7.33168 10.8387,7.57497 10.617,7.77972 C10.3953,7.98448 9.9975,8.32904 9.42349,8.81342 C9.26483,8.94992 9.13766,9.06989 9.04199,9.17337 C8.94633,9.27685 8.87516,9.37153 8.82849,9.4574 C8.4428,10.3468 6.77018,10.2464 7.0925,9.00165 C7.21383,8.73084 7.37483,8.49306 7.5755,8.2883 C7.77617,8.08354 8.04681,7.84026 8.38748,7.55844 C8.68615,7.31185 8.902,7.12583 9.035,7.00034 C9.168,6.87484 9.28,6.73502 9.371,6.5809 C9.462,6.42678 9.50748,6.25946 9.50748,6.07892 C9.50748,5.72665 9.36867,5.42944 9.091,5.18726 C8.81334,4.94507 8.45515,4.82397 8.01648,4.82397 C7.50314,4.82397 7.12514,4.94616 6.88248,5.19055 C6.63981,5.43494 6.43448,5.79491 6.26648,6.27048 C6.10781,6.76806 5.80683,7.01685 5.36349,7.01685 C5.10216,7.01685 4.88166,6.92988 4.702,6.75595 C4.52233,6.58202 4.4325,6.39378 4.4325,6.19122 Z M8,13 C7.44771,13 7,12.5523 7,12 C7,11.4477 7.44771,11 8,11 C8.55229,11 9,11.4477 9,12 C9,12.5523 8.55229,13 8,13 Z"
         />
@@ -264,101 +229,8 @@ const LearnSVG = (props) => (
 );
 
 
-const FeedbackSVG = (props) => (
-    <svg
-        fill="currentColor"
-        width="100%"
-        height="100%"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-    >
-        <path d="M22,1H15a2.44,2.44,0,0,0-2.41,2l-.92,5.05a2.44,2.44,0,0,0,.53,2,2.47,2.47,0,0,0,1.88.88H17l-.25.66A3.26,3.26,0,0,0,19.75,16a1,1,0,0,0,.92-.59l2.24-5.06A1,1,0,0,0,23,10V2A1,1,0,0,0,22,1ZM21,9.73l-1.83,4.13a1.33,1.33,0,0,1-.45-.4,1.23,1.23,0,0,1-.14-1.16l.38-1a1.68,1.68,0,0,0-.2-1.58A1.7,1.7,0,0,0,17.35,9H14.06a.46.46,0,0,1-.35-.16.5.5,0,0,1-.09-.37l.92-5A.44.44,0,0,1,15,3h6ZM9.94,13.05H7.05l.25-.66A3.26,3.26,0,0,0,4.25,8a1,1,0,0,0-.92.59L1.09,13.65a1,1,0,0,0-.09.4v8a1,1,0,0,0,1,1H9a2.44,2.44,0,0,0,2.41-2l.92-5a2.44,2.44,0,0,0-.53-2A2.47,2.47,0,0,0,9.94,13.05Zm-.48,7.58A.44.44,0,0,1,9,21H3V14.27l1.83-4.13a1.33,1.33,0,0,1,.45.4,1.23,1.23,0,0,1,.14,1.16l-.38,1a1.68,1.68,0,0,0,.2,1.58,1.7,1.7,0,0,0,1.41.74H9.94a.46.46,0,0,1,.35.16.5.5,0,0,1,.09.37Z" />
-    </svg>
-);
+const FeedbackSVG = spriteIcon("comment");
 
-const PlayIconSVG = (props) => (
-    <svg
-        width="100%"
-        height="100%"
-        viewBox="0 0 36 36"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-    >
-        <path
-            d="M32.16,16.08,8.94,4.47A2.07,2.07,0,0,0,6,6.32V29.53a2.06,2.06,0,0,0,3,1.85L32.16,19.77a2.07,2.07,0,0,0,0-3.7Z"
-            fill="currentColor"
-        />
-    </svg>
-);
-
-const PauseIconSVG = (props) => (
-    <svg
-        width="100%"
-        height="100%"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-    >
-        <path
-            d="M19,4V20a2,2,0,0,1-2,2H15a2,2,0,0,1-2-2V4a2,2,0,0,1,2-2h2A2,2,0,0,1,19,4ZM9,2H7A2,2,0,0,0,5,4V20a2,2,0,0,0,2,2H9a2,2,0,0,0,2-2V4A2,2,0,0,0,9,2Z"
-            fill="currentColor"
-        />
-    </svg>
-);
-
-const ResetIconSVG = (props) => (
-    <svg
-        width="100%"
-        height="100%"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-    >
-        <path
-            d="M12 2.99988C16.9706 2.99988 21 7.02931 21 11.9999C21 16.9704 16.9706 20.9999 12 20.9999C7.02944 20.9999 3 16.9704 3 11.9999C3 9.17261 4.30367 6.64983 6.34267 4.99988"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-        />
-        <path
-            d="M3 4.49988H7V8.49988"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-        />
-    </svg>
-);
-
-
-const SpeedIconSVG = (props) => (
-    <svg
-        width="100%"
-        height="100%"
-        viewBox="0 0 20 20"
-        fill="none"
-        xmlns="http://w3.org"
-        {...props}
-    >
-        <path
-            d="M10,20C4.5,20,0,15.5,0,10S4.5,0,10,0s10,4.5,10,10S15.5,20,10,20z M10,2c-4.4,0-8,3.6-8,8s3.6,8,8,8s8-3.6,8-8S14.4,2,10,2 z"
-            fill="currentColor"
-        />
-        <path
-            d="M8.6,11.4c-0.8-0.8-2.8-5.7-2.8-5.7s4.9,2,5.7,2.8c0.8,0.8,0.8,2,0,2.8C10.6,12.2,9.4,12.2,8.6,11.4z"
-            fill="currentColor"
-        />
-    </svg>
-);
-
-
-// size defaults to a container unit so the plane marker scales with the canvas
-// instead of staying a fixed pixel size as the window changes
 const DiamondIconSVG = ({ className = "", color, size = "4.5cqmin", ...props }) => {
     return (
         <svg
@@ -384,5 +256,23 @@ const DiamondIconSVG = ({ className = "", color, size = "4.5cqmin", ...props }) 
     );
 };
 
-
-export { ReturnSVG, PlaneSVG, BookSVG, LevelSVG, ExitSVG, SettingsSVG, SoundSVG, DisplaySVG, ControlsSVG, AccessibilitySVG, ExtrasSVG, CreateSVG, HelpSVG, LearnSVG, FeedbackSVG, PlayIconSVG, PauseIconSVG, ResetIconSVG, SpeedIconSVG, DiamondIconSVG};
+const StormIconSVG = (props) => (
+    <svg
+        fill="currentColor"
+        width="100%"
+        height="100%"
+        viewBox="0 0 512 512"
+        xmlns="http://www.w3.org/2000/svg"
+        {...props}
+    >
+        <g>
+            <g>
+                <path d="m328.7,345.4c-8.9-6.9-21.8-5.2-28.6,3.7l-24.3,31.5c-6.9,8.9-5.6,22.3 3.7,28.6 13.6,9.2 24.6,1.5 28.6-3.7l24.3-31.5c6.9-8.9 5.3-21.7-3.7-28.6z" />
+                <path d="m455,345.4c-8.9-6.9-21.8-5.2-28.6,3.7l-24.3,31.5c-6.9,8.9-5.6,22.3 3.7,28.6 13.6,9.2 24.6,1.5 28.6-3.7l24.3-31.5c6.9-8.9 5.2-21.7-3.7-28.6z" />
+                <path d="m376.4,432.9c-8.9-6.9-21.8-5.2-28.6,3.7l-24.3,31.5c-6.9,8.9-5.6,22.3 3.7,28.6 13.6,9.2 24.6,1.5 28.6-3.7l24.3-31.5c6.9-8.9 5.3-21.7-3.7-28.6z" />
+                <path d="m437.6,121.6c-7.8-62.9-65-110.6-135.4-110.6-40.9,0-78.7,16.5-104.2,44.5-18.3-17-43.6-27.1-70.3-27.1-54.5,0-98.9,40.7-98.9,90.7 0,10.3 2,20.6 5.7,30.3-15.2,20-23.5,43.8-23.5,68.2 0,62.6 52.9,114.1 119.8,118.8l-13.1,26c-2.7,5.4-2.9,11.7-0.5,17.3 2.4,5.6 7.1,9.8 12.9,11.5l37.4,11.2-48,65.5c-6.7,9.1-4.7,21.9 4.4,28.5 3.6,2.7 17.2,9.4 28.5-4.4l65.1-88.8c3.9-5.4 5-12.3 2.9-18.6-2.1-6.3-7.1-11.2-13.5-13.1l-41.8-12.5 11.2-22.3h199.1c69.2,0 125.6-51.7 125.6-115.2 0-41.5-24.5-79.6-63.4-99.9zm-62.2,177.7h-234.5c-49.1,0-89.1-36.7-89.1-81.7 0-19.5 7.7-38.4 21.6-53.2 5.4-5.8 6.5-14 2.7-20.8-4.3-7.7-6.5-15.9-6.5-24.4 0-29.4 26.1-53.3 58.1-53.3 22.3,0 42.9,12 52.5,30.6 3.3,6.5 10.4,10.6 18.2,10.7 7.6,0.1 15-3.9 18.5-10.3 16.4-29.9 49.1-48.4 85.4-48.4 52.2,0 94.2,37.6 95.5,85.5 0.2,7.2 4.9,13.7 12.1,16.6 30.6,12.5 50.4,40.4 50.4,71-0.1,42.8-38.1,77.7-84.9,77.7z" />
+            </g>
+        </g>
+    </svg>
+);
+export { ReturnSVG, PlaneSVG, BookSVG, LevelSVG, ExitSVG, SettingsSVG, SoundSVG, DisplaySVG, ControlsSVG, AccessibilitySVG, ExtrasSVG, CreateSVG, HelpSVG, LearnSVG, FeedbackSVG, DiamondIconSVG, StormIconSVG };

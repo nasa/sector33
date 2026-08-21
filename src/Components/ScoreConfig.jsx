@@ -1,4 +1,4 @@
-// Scores a completed level run against its level config
+// This script calculated the outcome of the level (i.e. the users score once finished)
 
 export const SCORE_TIER = {
     PERFECT: "perfect",
@@ -12,17 +12,18 @@ const TIER_LABELS = {
     [SCORE_TIER.FAILURE]: "Separation lost"
 };
 
-// completed - true once every plane has reached its endpoint
-// everTooClose - sticky flag from useCollisionTracking, true if any pair ever crossed separationPx
-// elapsedSeconds - real time taken to fly the level
-// idealTimeSeconds - the level's target time for a perfect score
-// Too close always fails the run regardless of time, matching real separation rules.
+// Only three possible outcomes with perfect being lined up in perfect time, passing lined up not with best time, and fail with planes colliding or too close
 export const evaluateScore = ({ completed, everTooClose, elapsedSeconds, idealTimeSeconds }) => {
     if (everTooClose) {
-        return { tier: SCORE_TIER.FAILURE, label: TIER_LABELS[SCORE_TIER.FAILURE], elapsedSeconds };
+        return {
+            tier: SCORE_TIER.FAILURE,
+            label: TIER_LABELS[SCORE_TIER.FAILURE],
+            elapsedSeconds,
+            idealTimeSeconds
+        };
     }
     if (!completed) return null;
 
     const tier = elapsedSeconds <= idealTimeSeconds ? SCORE_TIER.PERFECT : SCORE_TIER.SUCCESS;
-    return { tier, label: TIER_LABELS[tier], elapsedSeconds };
+    return { tier, label: TIER_LABELS[tier], elapsedSeconds, idealTimeSeconds };
 };

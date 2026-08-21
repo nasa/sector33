@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Single-file offline build (npm run build:standalone).
+# A build output like dist: attach it to a GitHub Release rather than committing it.
+standalone

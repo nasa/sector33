@@ -1,6 +1,8 @@
+// This script handles the logic of track switching
+
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { tracks, startingConditions as defaultStartingConditions, resolvePixel, DEFAULT_SPEED } from "./SimConfig";
+import { tracks, resolvePixel, DEFAULT_SPEED } from "./SimConfig";
 
 // Max pixels two positions can differ and still count as same point
 export const CONTINUITY_TOLERANCE = 2;
@@ -76,16 +78,9 @@ export const nextTrackKey = (startingConditions, planeKey, currentTrackKey) => {
 // Breakpoint map for track key
 const breakpointsFor = (trackKey) => tracks[trackKey]?.SvgComponent?.breakpoints || {};
 
-// Runtime registry and hook
 
-
-// activePlanes - keys currently in sim
-// timelineRef - master timeline
-// pathRefs -  pathRefs.current[planeKey][trackKey] -> <path> element
-
-// Actually switches the track
-// startingConditions - per-level plane config (see LevelConfig.jsx), defaults to SimConfig's
-export const useTrackSwitching = ({ activePlanes, timelineRef, pathRefs, startingConditions = defaultStartingConditions }) => {
+// Switch the track
+export const useTrackSwitching = ({ activePlanes, timelineRef, pathRefs, startingConditions = {} }) => {
     const [planeTracks, setPlaneTracks] = useState(() => {
         const initial = {};
         Object.keys(startingConditions).forEach((planeKey) => {
@@ -100,9 +95,7 @@ export const useTrackSwitching = ({ activePlanes, timelineRef, pathRefs, startin
     const [trailVisible, setTrailVisible] = useState({});
     const [switchNotice, setSwitchNotice] = useState(null);
 
-    // A returning plane key (e.g. planeAlpha reused across levels) would otherwise
-    // keep whatever track it was on in the previous level, since this state only
-    // seeds itself once on mount.
+
     useEffect(() => {
         const initial = {};
         Object.keys(startingConditions).forEach((planeKey) => {
@@ -127,9 +120,8 @@ export const useTrackSwitching = ({ activePlanes, timelineRef, pathRefs, startin
         return config.switchableTracks?.length ? config.switchableTracks : [config.trackKey];
     };
 
-
-    // Build a sub-timeline with motionPath tween and trail draw anchored locally so it overides config start ontop of plane
-    // toPixel overrides the configured endPixel, used to fly a plane past its normal finish point
+    // Subtimeline with motionPath tween and trail draw anchored locally to override config start ontop of plane
+    // toPixel overrides the configured endPixel which is used to fly a plane past its normal finish point
     const buildPlaneSub = (planeKey, trackKey, fromPixel, toPixel) => {
         const config = startingConditions[planeKey];
         const pathElement = pathRefs.current[planeKey]?.[trackKey];
@@ -357,11 +349,7 @@ export const useTrackSwitching = ({ activePlanes, timelineRef, pathRefs, startin
         master.render(masterTime, true, true);
     };
 
-    // MotionPath resolves the path into screen coordinates when a tween is built, so
-    // once the canvas changes size those baked coordinates no longer line up with the
-    // track and the planes sit off it. Rebuild every plane's current leg in place,
-    // from where it is now to where it was already heading, so nothing jumps or
-    // loses its remaining flight time.
+    // Rebuild every planes current leg in place from now to where it was heading so no jumps or losses in time
     const rebuildPlanePaths = () => {
         const master = timelineRef.current;
         if (!master) return;

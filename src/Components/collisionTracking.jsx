@@ -1,21 +1,18 @@
-// Track pixel distance between every pair of active planes and warn when any pair
-// is too close, same pixel-distance approach as measureSwitchGap in TrackSwitching.jsx
+// This script tracks the pixel distance between every pair of currently active planes and warns when any pair is too close (same as measureSwitchGap approach)
 import { useEffect, useRef, useState } from "react";
 
 export const DEFAULT_SEPARATION_PX = 34.72;
 
-// activePlanes - keys currently in sim
-// getPlanePositions - from useTrackSwitching, returns { [planeKey]: { x, y, ... } }
-// separationPx - radius around each plane that another plane may not enter
+// activePlanes are keys currently in sim
+// getPlanePositions from useTrackSwitching returns { [planeKey]: { x, y, ... }
+// separationPx is radius around each plane
 export const useCollisionTracking = ({ activePlanes, getPlanePositions, separationPx = DEFAULT_SEPARATION_PX }) => {
     const [closePairs, setClosePairs] = useState([]);
     const [everTooClose, setEverTooClose] = useState(false);
 
-    // Kept alongside the state so the level-complete handler can read the live
-    // value without depending on a possibly stale render closure.
     const everTooCloseRef = useRef(false);
-
     const getPlanePositionsRef = useRef(getPlanePositions);
+
     getPlanePositionsRef.current = getPlanePositions;
 
     const rafRef = useRef(null);
@@ -36,8 +33,7 @@ export const useCollisionTracking = ({ activePlanes, getPlanePositions, separati
                     const b = positions[activePlanes[j]];
                     if (!a || !b) continue;
 
-                    // Straight line distance, so the threshold acts as a radius around
-                    // each plane rather than a gap measured along a single track
+                    // Straight line distance (threshold acts like radius rather than gap along single track)
                     const gap = Math.hypot(a.x - b.x, a.y - b.y);
                     if (gap < separationPx) {
                         pairs.push({ planeA: activePlanes[i], planeB: activePlanes[j], gap });

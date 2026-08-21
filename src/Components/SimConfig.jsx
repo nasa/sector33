@@ -1,3 +1,4 @@
+// This script takes all the paths and displays them on the screen
 import {SVGComponent1, SVGComponent2, SVGComponent3, SVGComponent4, SVGComponent5, SVGComponent6} from '../../assets/resources/PathSVGs.jsx';
 
 export const tracks = {
@@ -9,83 +10,64 @@ export const tracks = {
     track6: { SvgComponent: SVGComponent6, label: "6 - level" },
 };
 
+// Calculated from knots per second from old sim
 export const DEFAULT_SPEED = 2.899;
 
-// Fallback for a plane config with no color of its own, so a new plane is never
-// drawn in the SVG default black against the dark stage
+// in case color not defined so doesn't break
 export const DEFAULT_PLANE_COLOR = "FFFFFF";
-// Define initial setup for each track
-export const startingConditions = {
-    planeAlpha: {
-        trackKey: "track2",
-        switchableTracks: ["track2", "track1"],
-        planeId: ".plane-alpha",
-        color: "00FFFF",
-        startPixel: "25_INIT_DESC",
-        endPixel: "0_MOD",
-        speed: DEFAULT_SPEED,
-        ease: "none",
-        autoRotate: true,
-        alignOrigin: [0.5, 0.5]
-    },
-    planeBeta: {
-        trackKey: "track4",
-        switchableTracks: ["track4", "track3"],
-        planeId: ".plane-beta",
-        color: "FFB703",
-        startPixel: "25_INIT_DESC",
-        endPixel: "0_MOD",
-        speed: DEFAULT_SPEED,
-        ease: "none",
-        autoRotate: true,
-        alignOrigin: [0.5, 0.5]
-    },
-    planeGamma: {
-        trackKey: "track5",
-        planeId: ".plane-gamma",
-        color: "C084FC",
-        startPixel: "30_INIT_DESC",
-        endPixel: "0_MOD",
-        speed: DEFAULT_SPEED,
-        ease: "none",
-        autoRotate: true,
-        alignOrigin: [0.5, 0.5]
-    },
+
+// Standard readable text for accessibility
+export const readableTextOn = (hex) => {
+    const clean = String(hex).replace("#", "");
+    if (clean.length !== 6) return "#ffffff";
+
+    const channel = (offset) => {
+        const value = parseInt(clean.slice(offset, offset + 2), 16) / 255;
+        return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+    };
+    const luminance = 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+
+    const againstWhite = 1.05 / (luminance + 0.05);
+    const againstBlack = (luminance + 0.05) / (0.0114 + 0.05);
+    return againstBlack >= againstWhite ? "#16161a" : "#ffffff";
 };
 
-// Turn a startPixel/endPixel config value into a number. Accepts either a
-// waypoint name from the track's breakpoints map ("25_INIT_DESC") or a raw px
-// number, so a config can be written either way.
+// Pixels per tick
+export const TICK_PX = 17.34;
+
+
+// Turns the mapped names into a pixel value (i.e. 25_INIT_DESC+2 = pixels) for easy level building and readability during debugging
 export const resolvePixel = (breakpoints, value) => {
+    if (typeof value === "number") return value;
+
     const mapped = breakpoints?.[value];
     if (typeof mapped === "number") return mapped;
-    return typeof value === "number" ? value : Number(value) || 0;
+
+    // In case + is within the string
+    const offset = typeof value === "string" ? value.match(/^(.+?)\s*([+-])\s*([\d.]+)$/) : null;
+    if (offset) {
+        const base = breakpoints?.[offset[1]];
+        if (typeof base === "number") {
+            return base + (offset[2] === "-" ? -1 : 1) * Number(offset[3]) * TICK_PX;
+        }
+    }
+
+    // In case not a number
+    const numeric = Number(value);
+    if (Number.isNaN(numeric)) {
+        if (import.meta.env.DEV) {
+            console.warn(
+                `[waypoint] "${value}" is not a known waypoint and has no numeric value; ` +
+                `falling back to 0, the end of the track. Known: ${Object.keys(breakpoints || {}).join(", ")}`
+            );
+        }
+        return 0;
+    }
+
+    return numeric || 0;
 };
 
 
-
-
-// Calculates pixel locations into GSAP MotionPath progress and calc travel timeline
-export const calculateMotionPathProps = (planeConfig, trackSvgComponent, totalLength) => {
-    const map = trackSvgComponent.breakpoints || {};
-    const startValue = resolvePixel(map, planeConfig.startPixel);
-    const endValue = resolvePixel(map, planeConfig.endPixel);
-
-    const absoluteDistanceTraveled = Math.abs(endValue - startValue);
-
-    const currentSpeed = planeConfig.speed || DEFAULT_SPEED;
-
-    const calcDuration = absoluteDistanceTraveled / currentSpeed;
-
-    return {
-        startProgress: startValue / totalLength,
-        endProgress: endValue / totalLength,
-        duration: calcDuration,
-        ease: planeConfig.ease,
-        autoRotate: planeConfig.autoRotate,
-        alignOrigin: planeConfig.alignOrigin
-    };
-};
 
 // Timeline acceleration param
 const SPEED_MULTIPLIERS = [1,2,5,10];
@@ -100,8 +82,7 @@ export const cycleTimelineSpeed = (timeline) => {
     return nextScale;
 };
 
-// Reset the acceleration cycle back to 1x, so a sim reset does not leave the
-// button label and the actual timeScale out of step.
+// Reset the acceleration cycle back to 1x, so a sim reset does not leave the button label and the actual timeScale out of step
 export const resetTimelineSpeed = (timeline) => {
     currentStepIndex = 0;
     if (timeline) timeline.timeScale(1);

@@ -1,16 +1,13 @@
-import React, {useRef, useState} from 'react';
-import { ReturnSVG, PlaneSVG, BookSVG, LevelSVG, ExitSVG, SettingsSVG, SoundSVG, DisplaySVG, ControlsSVG, AccessibilitySVG, ExtrasSVG, CreateSVG, HelpSVG, LearnSVG, FeedbackSVG } from "../../assets/resources/IconSVGs.jsx";
-import {
-    StartBtnSvg,
-    ExtrasBtnSVG,
-    SettingsBtnSVG,
-    BackBtnSVG,
-    QuitBtnSVG,
-    InfoSVG
-} from '../../assets/resources/ButtonSVGs.jsx';
+// This script houses the UI for the main menu
+import {useRef} from 'react';
+import { PlaneSVG, BookSVG, ExitSVG, SettingsSVG } from "../../assets/resources/IconSVGs.jsx";
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import {globalAnimations} from "../Components/globalAnimations.jsx";
+import {ScrollingTicker, HdsButton} from "../Components/UIComponents.jsx";
+import {MAIN_MENU_TICKER} from "../Components/tickerData.jsx";
+import {playSound} from "../Components/soundEffects.jsx";
+import sector33Logo from "../../assets/images/sector33logo.png";
 gsap.registerPlugin(useGSAP);
 
 
@@ -18,36 +15,40 @@ const MainMenu = ({ onNavigate }) => {
     const containerRef = useRef(null);
 
     // Destructure universal animations
-    const {animateIn, animateOut, handleMouseEnter, handleMouseLeave} = globalAnimations();
+    const {animateIn, animateOut} = globalAnimations();
 
     // Run the page entrance animation
-    const {contextSafe} = useGSAP(() => {
+    useGSAP(() => {
         animateIn();
     }, {scope: containerRef});
 
 
     //Handle Button Clicks
     const handleStartClick = () => {
+        playSound("buttonClick");
         animateOut(() => onNavigate('StartMenu'), '.fade-out');
     };
 
     const settingsPressed = () => {
-        alert("settings");
-    }
+        playSound("buttonClick");
+        animateOut(() => onNavigate('SettingsMenu'), '.fade-out');
+    };
 
     const extrasPressed = () => {
-        alert("options");
-    }
+        playSound("buttonClick");
+        animateOut(() => onNavigate('ExtrasMenu'), '.fade-out');
+    };
 
+    // Just exits to the splash screen not close browser
     const quitPressed = () => {
-        alert("If in window, close window, if in executable, close app.");
-        window.close();
-    }
+        playSound("back");
+        animateOut(() => onNavigate('SplashScreen'), '.fade-out');
+    };
 
 // Main Menu content
     return (
         <div ref={containerRef}
-             className="w-full h-full bg-slate-900 relative"
+             className="w-full h-full bg-carbon-90 relative"
         >
 
             {/*Main Content Modal*/}
@@ -66,104 +67,87 @@ const MainMenu = ({ onNavigate }) => {
                     top-[25cqh] left-[25cqw]
                     w-[50cqmin] h-[23cqmin]">
 
-                        <img className="object-cover" src="/assets/images/sector33logo.png" alt="Main Menu Center Image">
+                        <img className="object-cover" src={sector33Logo} alt="Main Menu Center Image">
                         </img>
                     </div>
-
 
                     {/*Start Button*/}
                     <div className="absolute slide-in-element
                     top-[2cqh] left-[2cqw]
-                    w-[30cqmin] h-[23qmin]
+                    w-[30cqmin]
                     startBtn
-                    "
-                         onMouseEnter={() => handleMouseEnter(".startText", ".startPlaneSVG", ".startShapeSVG")}
-                         onMouseLeave={() => handleMouseLeave(".startText", ".startPlaneSVG", ".startShapeSVG")}
-                         onClick={() => handleStartClick()}
-                    >
-
-                        {/*Parent Wrapper Container for Start*/}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-[1cqmin] z-10 text-[#3b3a3a]">
-                            <PlaneSVG className="startPlaneSVG w-[10cqmin] h-[10cqmin]"/>
-                            <span className="startText text-[3cqmin] font-mono font-bold">
-                                START
-                            </span>
-                        </div>
-
-                        <StartBtnSvg className="startShapeSVG" style={{'--svg-fill': '#1ac90a', '--svg-shadow': '#198501'}}></StartBtnSvg>
+                    ">
+                        <HdsButton
+                            variant="cta"
+                            Icon={PlaneSVG}
+                            label="START"
+                            size="2.6cqmin"
+                            className="w-full"
+                            onPress={handleStartClick}
+                        />
                     </div>
-
 
 
                     {/*Settings Button*/}
                     <div className="absolute slide-in-element
                     top-[2cqh] right-[2cqw]
-                    w-[30cqmin] h-[23qmin]
+                    w-[30cqmin]
                     settingBtn
-                    "
-                         onMouseEnter={() => handleMouseEnter(".settingsText", ".settingsGearSVG", ".settingsShapeSVG")}
-                         onMouseLeave={() => handleMouseLeave(".settingsText", ".settingsGearSVG", ".settingsShapeSVG")}
-                         onClick={() => settingsPressed()}
-                    >
-                        {/*Parent Wrapper Container for Start*/}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-[1cqmin] z-10 text-[#3b3a3a]">
-                            <SettingsSVG className="settingsGearSVG w-[10cqmin] h-[10cqmin]"/>
-                            <span className="settingsText text-[3cqmin] font-mono font-bold">
-                                SETTINGS
-                            </span>
-                        </div>
-
-                        <SettingsBtnSVG className="settingsShapeSVG" style={{'--svg-fill': '#f0a150', '--svg-shadow': '#f09537'}}></SettingsBtnSVG>
+                    ">
+                        <HdsButton
+                            variant="secondary"
+                            Icon={SettingsSVG}
+                            label="SETTINGS"
+                            size="2.6cqmin"
+                            className="w-full"
+                            onPress={settingsPressed}
+                        />
                     </div>
 
 
                     {/*Extras Button*/}
                     <div className="absolute slide-in-element
                     bottom-[2cqh] right-[2cqw]
-                    w-[30cqmin] h-[23qmin]
+                    w-[30cqmin]
                     extrasBtn
-                    "
-                         onMouseEnter={() => handleMouseEnter(".extrasText", ".extrasBoxSVG", ".extrasShapeSVG")}
-                         onMouseLeave={() => handleMouseLeave(".extrasText", ".extrasBoxSVG", ".extrasShapeSVG")}
-                         onClick={() => extrasPressed()}
-                    >
-
-                        {/*Parent Wrapper Container for Start*/}
-                        <div className="absolute inset-0 flex flex-col -translate-y-3 items-center justify-center gap-[1cqmin] z-10 text-[#3b3a3a]">
-                            <BookSVG className="extrasBoxSVG w-[8cqmin] h-[8cqmin]"/>
-                            <span className="extrasText text-[3cqmin] font-mono font-bold">
-                                EXTRAS
-                            </span>
-                        </div>
-
-                        <ExtrasBtnSVG className="extrasShapeSVG" style={{'--svg-fill': '#6497b1', '--svg-shadow': '#03396c'}}></ExtrasBtnSVG>
+                    ">
+                        <HdsButton
+                            variant="secondary"
+                            Icon={BookSVG}
+                            label="EXTRAS"
+                            size="2.6cqmin"
+                            className="w-full"
+                            onPress={extrasPressed}
+                        />
                     </div>
 
 
                     {/*Quit Button*/}
-                    <button className="absolute slide-in-element
-                    bottom-[5cqh] left-[5cqw]
-                    w-[20cqmin] h-[23qmin]
+                    <div className="absolute slide-in-element
+                    bottom-[2cqh] left-[2cqw]
+                    w-[30cqmin]
                     quitBtn
-                    "
-                            onMouseEnter={() => handleMouseEnter(".quitText", ".quitDoorSVG", ".quitShapeSVG")}
-                            onMouseLeave={() => handleMouseLeave(".quitText", ".quitDoorSVG", ".quitShapeSVG")}
-                            onClick={() => quitPressed()}
-                    >
-
-                        {/*Parent Wrapper Container for Start*/}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-[1cqmin] z-10 text-[#3b3a3a]">
-                            <ExitSVG className="quitDoorSVG w-[8cqmin] h-[8cqmin]"/>
-                            <span className="quitText text-[3cqmin] font-mono font-bold">
-                                EXIT
-                            </span>
-                        </div>
-
-                        <QuitBtnSVG className="quitShapeSVG" style={{'--svg-fill': '#684c6b', '--svg-shadow': '#332438'}}></QuitBtnSVG>
-                    </button>
+                    ">
+                        <HdsButton
+                            variant="outline"
+                            Icon={ExitSVG}
+                            label="QUIT TO TITLE"
+                            size="2.6cqmin"
+                            className="w-full"
+                            onPress={quitPressed}
+                        />
+                    </div>
 
                 </div>
             </div>
+
+            {/* Scrolling info text along the bottom, clear of the corner buttons */}
+            <ScrollingTicker
+                text={MAIN_MENU_TICKER}
+                label="news ticker"
+                className="slide-in-element fade-out absolute bottom-[1.5cqh] left-0 w-full
+                font-hds-body text-[calc(1.5cqmin*var(--ui-scale,1))] text-carbon-40"
+            />
 
         </div>
     );

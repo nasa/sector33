@@ -1,68 +1,48 @@
-import React, {useRef, useState} from 'react';
-import { ReturnSVG, PlaneSVG, LevelSVG, LearnSVG,} from "../../assets/resources/IconSVGs.jsx";
-import {StartBtnSvg, BackBtnSVG,} from '../../assets/resources/ButtonSVGs.jsx';
+// This script is pure react UI components and has the start menu options
+
+import {useRef} from 'react';
+import { ReturnSVG, PlaneSVG, LevelSVG, LearnSVG } from "../../assets/resources/IconSVGs.jsx";
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import {globalAnimations} from "../Components/globalAnimations.jsx";
+import {HdsButton} from "../Components/UIComponents.jsx";
+import {playSound} from "../Components/soundEffects.jsx";
 gsap.registerPlugin(useGSAP);
 
 
 const StartMenu = ({ onNavigate }) => {
     const containerRef = useRef(null);
+    const SHAPE = ".planeSelectorSVG";
+    const OPTION_BUTTONS = [".backBtn", ".tutorialBtn", ".levelsBtn"];
 
     // Destructure universal animations
-    const {handleMouseEnter, handleMouseLeave } = globalAnimations();
-
-    // Start Menu Specific Animations
+    const {selectorMenuIn, selectorMenuOut} = globalAnimations();
 
     // Run the page entrance animation
-    const {contextSafe} = useGSAP(() => {
-        gsap.timeline()
-            // Hide Everything on Load
-            .to([".planeSelectorSVG", ".backBtn", ".levelsBtn", ".tutorialBtn"], {autoAlpha:0, duration: 0}, 0)
-            // Just Plane svg flies in from left
-            .fromTo(".planeSelectorSVG", {autoAlpha:0, x: "-100vw" }, {autoAlpha:1, x: 0, duration: 1.5, ease: "power4.out"}, 0.5)
-            // Buttons load one by one
-            .fromTo([".backBtn", ".tutorialBtn", ".levelsBtn"], {autoAlpha:0, y: "10vw" }, {stagger: 0.2, autoAlpha:1, y: 0, duration: 0.5, ease: "power.in"})
+    useGSAP(() => {
+        selectorMenuIn(SHAPE, OPTION_BUTTONS);
     }, {scope: containerRef});
 
-    const handleLevelsClick = contextSafe(() => {
-        gsap.timeline()
-            //Reserve Buttons
-            .fromTo([".levelsBtn", ".tutorialBtn", ".backBtn"], {autoAlpha:1, y: 0 }, {stagger: 0.1, autoAlpha:0, y: "10vw", duration: 0.1, ease: "power.out"})
-            // Plane flies back left
-            .fromTo(".planeSelectorSVG", {autoAlpha:1, x:0 }, {autoAlpha:0, x: "100vw", duration: 0.5, ease: "power4.in"}, 0.25)
-            // Hide Everything
-            .to([".planeSelectorSVG", ".backBtn", ".levelsBtn", ".tutorialBtn"], {autoAlpha:0, duration: 0 ,
-                onComplete: () => {onNavigate('Levels')}});
-    });
+    // Send plane off to the right, back send it left
+    const handleLevelsClick = () => {
+        playSound("buttonClick");
+        selectorMenuOut(SHAPE, OPTION_BUTTONS, "100vw", () => onNavigate('Levels'));
+    };
 
-    const handleTutorialClick = contextSafe(() => {
-        gsap.timeline()
-            //Reserve Buttons
-            .fromTo([".levelsBtn", ".tutorialBtn", ".backBtn"], {autoAlpha:1, y: 0 }, {stagger: 0.1, autoAlpha:0, y: "10vw", duration: 0.1, ease: "power.out"})
-            // Plane flies back left
-            .fromTo(".planeSelectorSVG", {autoAlpha:1, x:0 }, {autoAlpha:0, x: "100vw", duration: 0.5, ease: "power4.in"}, 0.25)
-            // Hide Everything
-            .to([".planeSelectorSVG", ".backBtn", ".levelsBtn", ".tutorialBtn"], {autoAlpha:0, duration: 0 ,
-                onComplete: () => {onNavigate('Tutorial')}});
-    });
+    const handleTutorialClick = () => {
+        playSound("buttonClick");
+        selectorMenuOut(SHAPE, OPTION_BUTTONS, "100vw", () => onNavigate('Tutorial'));
+    };
 
-    const handleBackClick = contextSafe(() => {
-            gsap.timeline()
-                //Reserve Buttons
-                .fromTo([".levelsBtn", ".tutorialBtn", ".backBtn"], {autoAlpha:1, y: 0 }, {stagger: 0.1, autoAlpha:0, y: "10vw", duration: 0.1, ease: "power.out"})
-                // Plane flies back left
-                .fromTo(".planeSelectorSVG", {autoAlpha:1, x:0 }, {autoAlpha:0, x: "-100vw", duration: 0.5, ease: "power4.in"}, 0.25)
-                // Hide Everything
-                .to([".planeSelectorSVG", ".backBtn", ".levelsBtn", ".tutorialBtn"], {autoAlpha:0, duration: 0 ,
-                onComplete: () => {onNavigate('MainMenu')}});
-    });
+    const handleBackClick = () => {
+        playSound("back");
+        selectorMenuOut(SHAPE, OPTION_BUTTONS, "-100vw", () => onNavigate('MainMenu'));
+    };
 
 // Main Start Menu content
     return (
         <div ref={containerRef}
-             className="w-full h-full bg-slate-900 relative"
+             className="w-full h-full bg-carbon-90 relative"
         >
 
             {/*Main Content Modal*/}
@@ -81,7 +61,7 @@ const StartMenu = ({ onNavigate }) => {
                     "
                     >
                         {/*SVG Itself*/}
-                        <PlaneSVG className="startPlaneSVG text-white"/>
+                        <PlaneSVG className="startPlaneSVG text-spacesuit-white"/>
 
                         {/*Options Parent Wrapper Container*/}
                         <div className="
@@ -90,53 +70,38 @@ const StartMenu = ({ onNavigate }) => {
                         flex items-center justify-center gap-[5cqmin] z-10">
 
                             {/*Back Button*/}
-                            <div className="relative text-[#3b3a3a] backBtn"
-                                 onMouseEnter={() => handleMouseEnter(".backText", ".backShapeSVG", "null")}
-                                 onMouseLeave={() => handleMouseLeave(".backText", ".backShapeSVG", "null")}
-                                 onClick={() => handleBackClick()}
-                            >
-                                <BackBtnSVG className="backShapeSVG w-[12cqmin] h-[12qmin]" style={{'--svg-fill': '#1ac90a', '--svg-shadow': '#198501'}}></BackBtnSVG>
-                                <span className="flex items-center justify-center gap-[0.15em]
-                                absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                                backText text-[3cqmin] font-mono font-bold w-max">
-
-                                    <ReturnSVG className="shrink-0 backSVG w-[1em] h-[1em]"/>
-                                    BACK
-                                </span>
+                            <div className="backBtn">
+                                <HdsButton
+                                    variant="outline"
+                                    className="hds-btn-on-art"
+                                    Icon={ReturnSVG}
+                                    label="BACK"
+                                    size="2.4cqmin"
+                                    onPress={handleBackClick}
+                                />
                             </div>
 
                             {/*Tutorial Button*/}
-                            <div className="relative text-[#3b3a3a] tutorialBtn"
-                                 onMouseEnter={() => handleMouseEnter(".tutorialText", ".startShapeSVG2", "null")}
-                                 onMouseLeave={() => handleMouseLeave(".tutorialText", ".startShapeSVG2", "null")}
-                                 onClick={() => handleTutorialClick()}
-                            >
-                                <StartBtnSvg className="startShapeSVG2" style={{'--svg-fill': '#1ac90a', '--svg-shadow': '#198501'}}></StartBtnSvg>
-                                <span className="flex items-center justify-center gap-[0.3em]
-                                absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                                tutorialText text-[3.2cqmin] font-mono font-bold w-max">
-
-                                    <LearnSVG className="shrink-0 backSVG w-[1.2em] h-[1.2em]"/>
-                                    TUTORIAL
-                                </span>
+                            <div className="tutorialBtn">
+                                <HdsButton
+                                    variant="secondary"
+                                    Icon={LearnSVG}
+                                    label="TUTORIAL"
+                                    size="2.4cqmin"
+                                    onPress={handleTutorialClick}
+                                />
                             </div>
 
 
                             {/*Levels Button*/}
-                            <div className="relative text-[#3b3a3a] levelsBtn"
-
-                                 onMouseEnter={() => handleMouseEnter(".levelsText", ".startShapeSVG1", "null")}
-                                 onMouseLeave={() => handleMouseLeave(".levelsText", ".startShapeSVG1", "null")}
-                                 onClick={() => handleLevelsClick()}
-                            >
-                                <StartBtnSvg className="startShapeSVG1" style={{'--svg-fill': '#1ac90a', '--svg-shadow': '#198501'}}></StartBtnSvg>
-                                <span className="flex items-center justify-center gap-[0.3em]
-                                absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                                levelsText text-[3.2cqmin] font-mono font-bold w-max">
-
-                                    <LevelSVG className="shrink-0 backSVG w-[1.2em] h-[1.2em]"/>
-                                    LEVELS
-                                </span>
+                            <div className="levelsBtn">
+                                <HdsButton
+                                    variant="cta"
+                                    Icon={LevelSVG}
+                                    label="LEVELS"
+                                    size="2.4cqmin"
+                                    onPress={handleLevelsClick}
+                                />
                             </div>
 
                         </div>

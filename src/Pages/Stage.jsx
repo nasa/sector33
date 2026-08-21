@@ -1,10 +1,12 @@
+// This script is the main housing for the levels and combines everything onto this page
+
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 gsap.registerPlugin(useGSAP);
 import { globalAnimations } from "../Components/globalAnimations.jsx";
-import { PlayIconSVG, PauseIconSVG, ResetIconSVG, SpeedIconSVG, DiamondIconSVG } from "../../assets/resources/IconSVGs.jsx";
-import { ReturnToMenuBtn, IntroBanner, ProximityWarning, LevelCompleteModal } from "../Components/UIComponents.jsx";
+import { DiamondIconSVG } from "../../assets/resources/IconSVGs.jsx";
+import { ReturnToMenuBtn, ReturnToLevelsBtn, IntroBanner, StageLevelLabel, ProximityWarning, LevelCompleteModal, StormOverlay, PlaneMarkerOverlay, HdsButton, HdsIconButton } from "../Components/UIComponents.jsx";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 gsap.registerPlugin(MotionPathPlugin);
 import {SVGComponent0, SVGComponentTest} from '../../assets/resources/PathSVGs.jsx';
@@ -12,20 +14,31 @@ import {
     tracks,
     cycleTimelineSpeed,
     resetTimelineSpeed,
-    DEFAULT_PLANE_COLOR
+    DEFAULT_PLANE_COLOR,
+    readableTextOn
 } from "../Components/SimConfig";
 import { useTrackSwitching } from "../Components/TrackSwitching";
-import { getLevelConfig, getNextLevelId, activePlanesFor } from "../Components/LevelConfig.jsx";
+import { getLevelConfig, getNextLevelId, activePlanesFor, blockedTracksFor } from "../Components/LevelConfig.jsx";
 import { useCollisionTracking } from "../Components/collisionTracking.jsx";
 import { useFinishTracking } from "../Components/FinishTracking.jsx";
-import { evaluateScore } from "../Components/ScoreConfig.jsx";
+import { evaluateScore, SCORE_TIER } from "../Components/ScoreConfig.jsx";
+import { playSound } from "../Components/soundEffects.jsx";
 
+// One sound per level outcome
+const SCORE_SOUNDS = {
+    [SCORE_TIER.PERFECT]: "successBestTime",
+    [SCORE_TIER.SUCCESS]: "successNotBestTime",
+    [SCORE_TIER.FAILURE]: "fail"
+};
 
+const SKIP_SECONDS = 30;
+const SKIP_TIME_SCALE = 10;
+const TRANSPORT_SIZE = "7.5cqmin";
 
 const Stage = ({ onNavigate, levelId }) => {
 
     // Global Animations
-    const { animateIn, animateOut, handleMouseEnter, handleMouseLeave, introBannerSlideInOut } = globalAnimations();
+    const { animateIn, animateOut, introBannerSlideInOut } = globalAnimations();
 
     const levelConfig = getLevelConfig(levelId);
 
@@ -33,34 +46,21 @@ const Stage = ({ onNavigate, levelId }) => {
     const containerRef = useRef(null);
     const timelineRef = useRef(null);
 
-    // Real time stopwatch used to score the run, kept as refs so the GSAP
-    // onComplete callback always reads the live value rather than a stale closure.
-    const runStartRef = useRef(null);
-    const elapsedMsRef = useRef(0);
+    // Whether the sim is running, so the readout below only ticks while it is
     const isPlayingRef = useRef(false);
-
-
-    // pathRefs.current[planeKey][trackKey] -> the <path> element of that track's SVG.
-    // Every track a plane *could* fly is mounted, so switching never has to wait
-    // for a React re-render to get a path element to animate along.
+    const skipCallRef = useRef(null);
+    const skipPreviousScaleRef = useRef(1);
     const pathRefs = useRef({});
-
-    const visibleTracksRef = useRef({});
-    const trailTweenAddedRef = useRef({});
-
-    // Derived straight from levelConfig every render, rather than mirrored into its
-    // own state, so it can never lag a render behind when levelId changes (a stale
-    // planeKey here crashes the render, since JSX looks it up in levelConfig).
     const activePlanes = useMemo(() => activePlanesFor(levelConfig), [levelConfig]);
+    const blockedTracks = useMemo(() => blockedTracksFor(levelConfig), [levelConfig]);
 
     // React state hooks for layout changes
     const [currentSpeedLabel, setCurrentSpeedLabel] = useState(1);
-    const [activePlane, setActivePlane] = useState("AAL12");
+    const [activePlane, setActivePlane] = useState(null);
     const [planeCurrentSpeeds, setPlaneCurrentSpeeds] = useState({});
     const [score, setScore] = useState(null);
     const [displayElapsedSeconds, setDisplayElapsedSeconds] = useState(0);
-
-    const [visibleTracks, setVisibleTracks] = useState({});
+    const [skipping, setSkipping] = useState(false);
 
     // All track ownership, trail visibility and switching lives here.
     const {
@@ -71,7 +71,6 @@ const Stage = ({ onNavigate, levelId }) => {
         buildAll,
         switchTrack,
         showTrail,
-        hideTrail,
         hideAllTrails,
         candidateTracks,
         nextTrackFor,
@@ -80,27 +79,27 @@ const Stage = ({ onNavigate, levelId }) => {
         rebuildPlanePaths
     } = useTrackSwitching({ activePlanes, timelineRef, pathRefs, startingConditions: levelConfig.startingConditions });
 
-    // Warns when any two planes cross the level's separation distance, and keeps a
-    // sticky flag for scoring once separation has ever been lost.
+    // Warns when any two planes cross the level's separation distance, and keeps a sticky flag for scoring once separation has ever been lost.
     const { tooClose, everTooCloseRef, resetCollisionState } = useCollisionTracking({
         activePlanes,
         getPlanePositions,
         separationPx: levelConfig.separationPx
     });
 
-    // Clear the previous run's score and stopwatch whenever a different level is selected.
+    // Clear the previous run's score and timer whenever a different level is selected.
     useEffect(() => {
-        runStartRef.current = null;
-        elapsedMsRef.current = 0;
         isPlayingRef.current = false;
         setDisplayElapsedSeconds(0);
         setScore(null);
         resetCollisionState();
     }, [levelId]);
 
-    // Drives the elapsed time readout by the controls. Reads the master timeline's
-    // own clock so the readout speeds up along with the timeScale speed button,
-    // separate from the wall-clock stopwatch used for scoring below.
+    // Never leave a pending skip running against a timeline that has gone away
+    useEffect(() => () => {
+        if (skipCallRef.current) skipCallRef.current.kill();
+    }, []);
+
+    // Drives the elapsed time readout by the controls
     useEffect(() => {
         let rafId;
         const tick = () => {
@@ -113,26 +112,26 @@ const Stage = ({ onNavigate, levelId }) => {
         return () => cancelAnimationFrame(rafId);
     }, []);
 
-    // Scores the run once every plane has come to rest. Uses real wall-clock time
-    // (not the timeline's own clock) so using the speed button to finish faster
-    // in real life actually earns a better score.
-    const handleLevelComplete = () => {
-        const now = Date.now();
-        const totalMs = elapsedMsRef.current + (runStartRef.current ? now - runStartRef.current : 0);
-        runStartRef.current = null;
+    // Scores the run once every plane has come to rest
+    const handleLevelComplete = (scoreTime) => {
         isPlayingRef.current = false;
-        elapsedMsRef.current = totalMs;
-        // Every plane has stopped on its slot by the time this fires, so the sim
-        // can be frozen without cutting a plane short of the lineup
+        // A skip may still be counting down when the last plane lands
+        cancelSkip();
+
+        const elapsedSeconds = typeof scoreTime === "number"
+            ? scoreTime
+            : (timelineRef.current ? timelineRef.current.time() : 0);
+
+        // Every plane has stopped on its slot by the time this fires, so the sim can be frozen without cutting a plane short of the lineup
         if (timelineRef.current) {
-            setDisplayElapsedSeconds(timelineRef.current.time());
+            setDisplayElapsedSeconds(elapsedSeconds);
             timelineRef.current.pause();
         }
 
         setScore(evaluateScore({
             completed: true,
             everTooClose: everTooCloseRef.current,
-            elapsedSeconds: totalMs / 1000,
+            elapsedSeconds,
             idealTimeSeconds: levelConfig.idealTimeSeconds
         }));
     };
@@ -142,12 +141,15 @@ const Stage = ({ onNavigate, levelId }) => {
         activePlanes,
         getPlanePositions,
         extendPlaneTo,
+        getElapsedSeconds: () => (timelineRef.current ? timelineRef.current.time() : 0),
         onAllPlanesFinished: handleLevelComplete
     });
 
     const { contextSafe } = useGSAP(() => {
         //On load animations
         introBannerSlideInOut();
+        // Timed to land as the intro banner slides back off, so the level stays named
+        gsap.fromTo('.levelLabel', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6, delay: 6.2 });
         animateIn();
         gsap.to('.speedControls', { autoAlpha: 0, duration:0});
 
@@ -158,16 +160,13 @@ const Stage = ({ onNavigate, levelId }) => {
     const rebuildPlanePathsRef = useRef(rebuildPlanePaths);
     rebuildPlanePathsRef.current = rebuildPlanePaths;
 
-    // Rebuild the motion paths whenever the canvas changes size, otherwise the planes
-    // keep flying the pixel coordinates baked in at the previous size and drift off track.
+    // Rebuild the motion paths whenever the canvas changes size, otherwise the planes keep flying the pixel coordinates baked in at the previous size and drift off track.
     useEffect(() => {
         const element = containerRef.current;
         if (!element || typeof ResizeObserver === "undefined") return undefined;
 
         let frame;
         const observer = new ResizeObserver(() => {
-            // Dragging a window edge fires this continuously, so collapse the burst
-            // into a single rebuild on the next frame.
             cancelAnimationFrame(frame);
             frame = requestAnimationFrame(() => rebuildPlanePathsRef.current());
         });
@@ -178,6 +177,16 @@ const Stage = ({ onNavigate, levelId }) => {
             cancelAnimationFrame(frame);
         };
     }, []);
+
+    // Sound the alert as separation is lost, not on every frame it stays lost
+    useEffect(() => {
+        if (tooClose) playSound("planesTooClose");
+    }, [tooClose]);
+
+    // One outcome sound when the level is graded
+    useEffect(() => {
+        if (score) playSound(SCORE_SOUNDS[score.tier]);
+    }, [score]);
 
     // Let a switch message fade out on its own rather than sticking around.
     useEffect(() => {
@@ -192,56 +201,94 @@ const Stage = ({ onNavigate, levelId }) => {
         animateOut(() => onNavigate('MainMenu'), '.fade-out');
     };
 
+    const levelSelectPressed = () => {
+        animateOut(() => onNavigate('Levels'), '.fade-out');
+    };
+
     const nextLevelId = getNextLevelId(levelConfig.id);
 
     // Level complete popup actions
-    const nextLevelPressed = () => onNavigate('Stage', nextLevelId);
+    const nextLevelPressed = () => { playSound("nextPrev"); return onNavigate('Stage', nextLevelId); };
     const restartLevelPressed = () => resetPressed();
 
     // Control Buttons (Standard syntax)
     const playPressed = contextSafe(function() {
+        playSound("play");
         if (timelineRef.current) {
-            if (!runStartRef.current) runStartRef.current = Date.now();
             isPlayingRef.current = true;
             timelineRef.current.play();
         }
     });
 
     const pausePressed = contextSafe(function() {
+        playSound("pause");
         if (timelineRef.current) {
-            if (runStartRef.current) {
-                elapsedMsRef.current += Date.now() - runStartRef.current;
-                runStartRef.current = null;
-            }
             isPlayingRef.current = false;
             timelineRef.current.pause();
             setDisplayElapsedSeconds(timelineRef.current.time());
         }
     });
 
-    // Reset rebuilds rather than restarts. A plane that switched track has its new
-    // leg spliced into the master at the moment of the switch, so a plain
-    // restart() would leave it parked until that time came round again.
+    // Reset rebuilds rather than restarts
     const resetPressed = contextSafe(function() {
+        playSound("restart");
+        cancelSkip();
         buildAll();
         timelineRef.current.pause();
         setPlaneCurrentSpeeds({});
         setCurrentSpeedLabel(resetTimelineSpeed(timelineRef.current));
 
-        runStartRef.current = null;
-        elapsedMsRef.current = 0;
         isPlayingRef.current = false;
         setDisplayElapsedSeconds(0);
         setScore(null);
+        setActivePlane(null);
+        hideEverything();
         resetCollisionState();
         resetFinishTracking();
     });
 
     const speedPressed = contextSafe(function() {
+        playSound("speedChange");
         if (timelineRef.current) {
             const activeSpeed = cycleTimelineSpeed(timelineRef.current);
             setCurrentSpeedLabel(activeSpeed);
         }
+    });
+
+    // Clears a skip that is still running
+    const cancelSkip = () => {
+        if (!skipCallRef.current) return;
+        skipCallRef.current.kill();
+        skipCallRef.current = null;
+        if (timelineRef.current) timelineRef.current.timeScale(skipPreviousScaleRef.current);
+        setSkipping(false);
+    };
+
+    // Runs the sim forward by exactly SKIP_SECONDS
+    const skipPressed = contextSafe(function() {
+        const master = timelineRef.current;
+        if (!master || skipping || score) return;
+
+        playSound("skip30");
+        const previousTimeScale = master.timeScale();
+        const targetTime = Math.min(master.time() + SKIP_SECONDS, master.duration());
+
+        skipPreviousScaleRef.current = previousTimeScale;
+        setSkipping(true);
+        isPlayingRef.current = true;
+        master.timeScale(SKIP_TIME_SCALE);
+        master.play();
+
+        skipCallRef.current = gsap.delayedCall(SKIP_SECONDS / SKIP_TIME_SCALE, () => {
+            master.pause();
+            master.time(targetTime);
+            master.timeScale(previousTimeScale);
+
+            isPlayingRef.current = false;
+            setDisplayElapsedSeconds(master.time());
+            skipCallRef.current = null;
+            setSkipping(false);
+        });
     });
 
 
@@ -252,26 +299,27 @@ const Stage = ({ onNavigate, levelId }) => {
     });
 
 
-    const handlePlaneClick = contextSafe((e, planeKey) => {
-        e.stopPropagation();
-        // If same plane clicked do nothing
+    // Selecting an aircraft
+    const selectPlane = contextSafe((planeKey) => {
         if (trailVisible[planeKey]) return;
-        // hide all other trails
+        playSound("selectPlane");
+        // hide all other trails, then reveal this one's
         hideAllTrails();
-        // reveal the trail of the plane clicked
         showTrail(planeKey);
-
-        // display speed controls
-        displaySpeedControls(e, planeKey);
+        displaySpeedControls();
         setActivePlane(planeKey);
     });
 
-    // Show/Hide Speed Controls per plane
-    const displaySpeedControls = contextSafe((e, planeKey) => {
-        gsap.to('.speedControls', { autoAlpha: 1, duration:0.25, ease:'easeIn' });
-
+    const handlePlaneClick = contextSafe((e, planeKey) => {
+        e.stopPropagation();
+        // If same plane clicked do nothing
+        selectPlane(planeKey);
     });
 
+    // Show/Hide Speed Controls per plane
+    const displaySpeedControls = contextSafe(() => {
+        gsap.to('.speedControls', { autoAlpha: 1, duration:0.25, ease:'easeIn' });
+    });
 
     const speedMultipliers = {
         600: 1.0,   // Base
@@ -282,10 +330,9 @@ const Stage = ({ onNavigate, levelId }) => {
         300: 0.5    // 1/2
     };
 
-
-
     const speedChanged = contextSafe((e, speedNum) => {
         if (!timelineRef.current || !activePlane) return;
+        playSound("switchSpeed");
 
         const globalTime = timelineRef.current.time();
         const multiplier = speedMultipliers[speedNum] || 1.0;
@@ -302,21 +349,96 @@ const Stage = ({ onNavigate, levelId }) => {
         }
     });
 
-
     const handleTrackSwitchTrigger = contextSafe((planeKey) => {
-        switchTrack(planeKey);
+        const result = switchTrack(planeKey);
+        playSound(result && result.ok ? "trackSwitch" : "cantClick");
     });
 
 
     const activeTrackKey = activePlane ? planeTracks[activePlane] : null;
     const pendingTrackKey = activePlane ? nextTrackFor(activePlane) : null;
     const canSwitch = Boolean(activePlane && pendingTrackKey);
+    const activePlaneConfig = activePlane ? levelConfig.startingConditions[activePlane] : null;
+    const activePlaneCallsign = activePlaneConfig?.callsign || null;
+    const activePlaneColor = activePlaneConfig?.color || null;
+
+    // What a screen reader hears in place of a coloured diamond on a map
+    // Track and speed are read from live state rather than the level config, so the label keeps
+    // up after a switch or a speed change instead of describing the starting setup.
+    const planeLabel = (planeKey, config) => {
+        const trackKey = planeTracks[planeKey];
+        const trackName = tracks[trackKey]?.label || trackKey || "no route";
+        const knots = planeCurrentSpeeds[planeKey] || 600;
+        return `${config.callsign}, route ${trackName}, ${knots} knots`;
+    };
+
+    // The simulator's keyboard model. Listed on the Controls screen
+    useEffect(() => {
+        const ARROWS = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+
+        const onKeyDown = (event) => {
+            if (document.querySelector('[role="dialog"]')) return;
+
+            if (event.key === "Escape") {
+                if (!activePlane) return;
+                hideEverything();
+                setActivePlane(null);
+                return;
+            }
+
+            if (event.key === "Tab") {
+                event.preventDefault();
+
+                if (event.shiftKey) {
+                    // Back out to the corner navigation, and step between its buttons on repeat presses so both Levels and Menu are reachable without Tab.
+                    const nav = [...(containerRef.current?.querySelectorAll(".corner-nav") || [])];
+                    if (!nav.length) return;
+                    const at = nav.indexOf(document.activeElement);
+                    nav[at === -1 ? 0 : (at - 1 + nav.length) % nav.length].focus();
+                    return;
+                }
+
+                // Forward through the aircraft, wrapping. Focus follows the selection so the highlight lands where the player is looking.
+                if (!activePlanes.length) return;
+                const current = activePlanes.indexOf(activePlane);
+                const nextKey = activePlanes[(current + 1) % activePlanes.length];
+                selectPlane(nextKey);
+                const marker = containerRef.current?.querySelector(
+                    `[aria-label^="${levelConfig.startingConditions[nextKey]?.callsign}"]`
+                );
+                marker?.focus();
+                return;
+            }
+
+            if (ARROWS.includes(event.key)) {
+
+                const controls = [...(containerRef.current?.querySelectorAll(".stage-control") || [])]
+                    .filter((element) => !element.disabled
+                        && element.getAttribute("aria-disabled") !== "true"
+                        && element.offsetParent !== null
+                        && getComputedStyle(element).visibility !== "hidden");
+                if (!controls.length) return;
+
+                event.preventDefault();
+                // Keyboard controls
+                const back = event.key === "ArrowLeft" || event.key === "ArrowUp";
+                const at = controls.indexOf(document.activeElement);
+                const next = at === -1
+                    ? 0
+                    : (at + (back ? -1 : 1) + controls.length) % controls.length;
+                controls[next].focus();
+            }
+        };
+
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, [activePlane, activePlanes, hideEverything, selectPlane, levelConfig]);
 
 
 
     return (
         <div ref={containerRef}
-             className="w-full h-full bg-slate-900 relative fade-out"
+             className="w-full h-full bg-carbon-90 relative fade-out"
              onClick={hideAllTrails}
         >
 
@@ -342,6 +464,11 @@ const Stage = ({ onNavigate, levelId }) => {
                     <SVGComponent0 color="FFFFFF"/>
                 </div>
 
+                {/*Storms over the routes this level closes off*/}
+                <div className="absolute inset-0 pointer-events-none">
+                    <StormOverlay blockedTracks={blockedTracks}/>
+                </div>
+
 
                 {activePlanes.map((planeKey) => {
                     const config = levelConfig.startingConditions[planeKey];
@@ -351,9 +478,6 @@ const Stage = ({ onNavigate, levelId }) => {
                     return (
                         <div key={planeKey} className="absolute inset-0 w-full h-full pointer-events-none">
 
-                            {/* Every track this plane can fly is mounted. Only the one it
-                                is currently on is ever given opacity, so the others are
-                                invisible ref-holders ready to be switched onto. */}
                             {candidateTracks(planeKey).map((trackKey) => {
                                 const TrackSvg = tracks[trackKey].SvgComponent;
 
@@ -371,28 +495,48 @@ const Stage = ({ onNavigate, levelId }) => {
                                 );
                             })}
 
-                            <div className={`${planeClass} absolute pointer-events-auto cursor-pointer`}>
+                            <button
+                                type="button"
+                                className={`${planeClass} absolute pointer-events-auto cursor-pointer`}
+                                aria-pressed={activePlane === planeKey}
+                                aria-label={planeLabel(planeKey, config)}
+                                onClick={(e) => handlePlaneClick(e, planeKey)}
+                            >
                                 <DiamondIconSVG
                                     color={planeColor}
-                                    onClick={(e) => handlePlaneClick(e, planeKey)}
+                                    aria-hidden="true"
                                 />
-                            </div>
+                            </button>
                         </div>
                     );
                 })}
+
+                {/*Range rings and callsigns, drawn over the planes*/}
+                <div className="absolute inset-0 pointer-events-none">
+                    <PlaneMarkerOverlay
+                        activePlanes={activePlanes}
+                        startingConditions={levelConfig.startingConditions}
+                        getPlanePositions={getPlanePositions}
+                    />
+                </div>
             </div>
 
 
             {/*Exit to Main Menu Button*/}
             <ReturnToMenuBtn
-                onClick={(e) => e.stopPropagation()}
-                handleMouseEnter={handleMouseEnter}
-                handleMouseLeave={handleMouseLeave}
                 menuPressed={menuPressed}
+            />
+
+            {/*Back to Level Select Button*/}
+            <ReturnToLevelsBtn
+                levelsPressed={levelSelectPressed}
             />
 
             {/*Intro Banner SVG*/}
             <IntroBanner text={levelConfig.introText} />
+
+            {/*Caption left behind once the intro banner has gone*/}
+            <StageLevelLabel text={levelConfig.introText} />
 
             {/*Proximity Warning*/}
             <ProximityWarning visible={tooClose} />
@@ -410,38 +554,43 @@ const Stage = ({ onNavigate, levelId }) => {
 
 
             {/*Speed Controls*/}
-            {/* Height is left to the content so every speed option fits, and the
-                offsets use cqi across and cqb down so the panel keeps its gap to
-                the switch panel at any canvas size. */}
-            <div className="absolute fade-out flex flex-col text-center speedControls
+            <div role="group"
+                 aria-label={activePlane
+                     ? `Speed for ${levelConfig.startingConditions[activePlane]?.callsign || activePlane}`
+                     : "Speed, no aircraft selected"}
+                 className="absolute fade-out flex flex-col text-center speedControls
             top-[2.5cqb] left-[2.5cqi]
             rounded-xl
             overflow-hidden
             w-[12cqi]
             z-10
             ">
-                <div className="text-[#FFFFFF]
-                bg-emerald-600
-                w-full
-                py-[1cqmin]
-                text-[1.8cqmin]
-                ">
-                    {activePlane || "No plane"}
+                {/*Uses aircrafts own color to stand out more*/}
+                <div className="w-full py-[1cqmin] text-[calc(1.8cqmin*var(--ui-scale,1))] font-hds-mono font-bold"
+                     style={activePlaneColor
+                         ? { backgroundColor: `#${activePlaneColor}`, color: readableTextOn(activePlaneColor) }
+                         : undefined}
+                >
+                    {activePlaneCallsign || "No aircraft"}
                 </div>
 
                 {[600, 540, 480, 420, 360, 300].map((speedNum) => {
                     const currentSpeed = planeCurrentSpeeds[activePlane] || 600;
                     const isActive = currentSpeed === speedNum;
 
-                    //Simple hover no gsap for draft
-                    const activeStyles = "bg-blue-500 text-white font-bold";
-                    const inactiveStyles = "bg-slate-500 text-[#3b3a3a] hover:bg-slate-400";
-                    const themeStyles = isActive ? activeStyles : inactiveStyles;
+                    const inactiveStyles = "bg-carbon-70 text-spacesuit-white hover:bg-carbon-60";
+                    const themeStyles = isActive ? "font-bold" : inactiveStyles;
 
                     return (
                         <button
+                            tabIndex={-1}
                             key={speedNum}
-                            className={`w-full py-[1cqmin] text-[1.8cqmin] speedText transition-colors duration-150 border-t border-slate-600/20 ${themeStyles}`}
+                            aria-pressed={isActive}
+                            style={isActive && activePlaneColor
+                                ? { backgroundColor: `#${activePlaneColor}`, color: readableTextOn(activePlaneColor) }
+                                : undefined}
+                            className={`stage-control w-full py-[1cqmin] text-[calc(1.8cqmin*var(--ui-scale,1))] speedText transition-colors duration-150 border-t border-carbon-60/20 ${themeStyles} ${skipping ? "opacity-60 cursor-not-allowed" : ""}`}
+                            disabled={skipping}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 speedChanged(e, speedNum);
@@ -454,40 +603,35 @@ const Stage = ({ onNavigate, levelId }) => {
             </div>
 
             {/*Switch Controls*/}
-            {/* Sits clear of the speed panel, which ends at 14.5cqi, and is wide
-                enough for the longest track label without the button clipping. */}
+
             <div className="absolute fade-out text-center speedControls
             top-[2.5cqb] left-[16cqi]
-            rounded-xl border border-red-800
+            rounded-xl
             overflow-hidden
             w-[18cqi]
             z-10
             ">
-                <button className={`text-[#FFFFFF]
-                w-full
-                py-[1cqmin] px-[1.5cqmin]
-                text-[1.6cqmin] leading-tight
-                ${canSwitch ? "bg-orange-400 hover:bg-orange-300" : "bg-slate-600 cursor-not-allowed"}
-                `}
-                        disabled={!canSwitch}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleTrackSwitchTrigger(activePlane);
-                        }}
-                >
-                    {canSwitch
+
+                <HdsButton
+                    variant="secondary"
+                    className="stage-control w-full leading-tight"
+                    tabIndex={-1}
+                    label={canSwitch
                         ? `Switch to ${tracks[pendingTrackKey]?.label || pendingTrackKey}`
                         : "Switch Track"}
-                </button>
+                    size="1.6cqmin"
+                    disabled={!canSwitch || skipping}
+                    onPress={() => handleTrackSwitchTrigger(activePlane)}
+                />
 
                 {activeTrackKey && (
-                    <div className="bg-slate-800 text-[#FFFFFF] w-full p-[1cqmin] text-[1.5cqmin]">
+                    <div className="bg-carbon-80 text-spacesuit-white w-full p-[1cqmin] text-[calc(1.5cqmin*var(--ui-scale,1))]">
                         On {tracks[activeTrackKey]?.label || activeTrackKey}
                     </div>
                 )}
-
                 {switchNotice && (
-                    <div className={`w-full p-[1cqmin] text-[1.5cqmin] ${switchNotice.ok ? "bg-emerald-700 text-white" : "bg-red-800 text-white"}`}>
+                    <div role="status"
+                         className={`w-full p-[1cqmin] text-[calc(1.5cqmin*var(--ui-scale,1))] ${switchNotice.ok ? "bg-nasa-blue text-spacesuit-white" : "bg-nasa-red-shade text-spacesuit-white"}`}>
                         {switchNotice.ok
                             ? `Switched to ${tracks[switchNotice.to]?.label || switchNotice.to}`
                             : switchNotice.reason}
@@ -498,93 +642,76 @@ const Stage = ({ onNavigate, levelId }) => {
 
 
             {/*Controls*/}
-            {/* Height is left to the content: a fixed height plus overflow-hidden
-                clipped the bottom of the round buttons, whose 7.5cqmin plus padding
-                comes to 11.5cqmin. */}
             <div className="absolute slide-in-element fade-out flex items-center
                 bottom-[5cqb] left-[2.5cqi]
-                w-[30cqi]
+                w-[36cqi]
                 p-[2cqmin]
                 gap-[2cqmin]
                 z-10
                 ">
 
-                <button className="text-[#3b3a3a]
-                border border-blue-500 bg-slate-500 rounded-full
-                w-[7.5cqmin] h-[7.5cqmin]
-                p-[1cqmin]
-                "
-                        onMouseEnter={() => handleMouseEnter(".PlayIcon", null, null)}
-                        onMouseLeave={() => handleMouseLeave(".PlayIcon", null, null)}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            playPressed();
-                        }}
-                >
-                    <PlayIconSVG className="PlayIcon w-full h-full"/>
-                </button>
+                <HdsIconButton
+                    tabIndex={-1}
+                    className="stage-control"
+                    name="play"
+                    label="Play"
+                    size={TRANSPORT_SIZE}
+                    disabled={skipping}
+                    onPress={playPressed}
+                />
+
+                <HdsIconButton
+                    tabIndex={-1}
+                    className="stage-control"
+                    name="pause"
+                    label="Pause"
+                    size={TRANSPORT_SIZE}
+                    disabled={skipping}
+                    onPress={pausePressed}
+                />
+
+                <HdsIconButton
+                    tabIndex={-1}
+                    className="stage-control"
+                    name="rotate"
+                    label="Restart level"
+                    size={TRANSPORT_SIZE}
+                    disabled={skipping}
+                    onPress={resetPressed}
+                />
 
 
-                <button className="text-[#3b3a3a]
-                border border-blue-500 bg-slate-500 rounded-full
-                w-[7.5cqmin] h-[7.5cqmin]
-                p-[1cqmin]
-                "
-                        onMouseEnter={() => handleMouseEnter(".PauseIcon", null, null)}
-                        onMouseLeave={() => handleMouseLeave(".PauseIcon", null, null)}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            pausePressed();
-                        }}
+                <HdsIconButton
+                    tabIndex={-1}
+                    className="stage-control"
+                    text={`${currentSpeedLabel}x`}
+                    label={`Simulation speed, currently ${currentSpeedLabel} times. Press to change.`}
+                    size={TRANSPORT_SIZE}
+                    disabled={skipping}
+                    onPress={speedPressed}
+                />
 
-                >
-                    <PauseIconSVG className="PauseIcon w-full h-full"/>
-                </button>
-
-
-                <button className="text-[#3b3a3a]
-                border border-blue-500 bg-slate-500 rounded-full
-                w-[7.5cqmin] h-[7.5cqmin]
-                p-[1cqmin]
-                "
-                        onMouseEnter={() => handleMouseEnter(".ResetIcon", null, null)}
-                        onMouseLeave={() => handleMouseLeave(".ResetIcon", null, null)}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            resetPressed();
-                        }}
-                >
-                    <ResetIconSVG className="ResetIcon w-full h-full"/>
-                </button>
-
-                <button className="text-[#3b3a3a]
-                border border-blue-500 bg-slate-500 rounded-full
-                w-[7.5cqmin] h-[7.5cqmin]
-                p-[1cqmin]
-                "
-                        onMouseEnter={() => handleMouseEnter(".SpeedIcon", null, null)}
-                        onMouseLeave={() => handleMouseLeave(".SpeedIcon", null, null)}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            speedPressed();
-                        }}
-                >
-                    <div className= "flex items-center justify-center">
-                        <SpeedIconSVG className="SpeedIcon w-full h-full"/>
-                        <span className="text-[2cqmin]">
-                            {currentSpeedLabel}x
-                        </span>
-                    </div>
-
-                </button>
+                {/*Skip Forward 30s*/}
+                <HdsIconButton
+                    tabIndex={-1}
+                    className="stage-control"
+                    text={`+${SKIP_SECONDS}s`}
+                    label={skipping ? `Skipping ahead ${SKIP_SECONDS} seconds` : `Skip ahead ${SKIP_SECONDS} seconds`}
+                    variant={skipping ? "secondary" : "utility"}
+                    size={TRANSPORT_SIZE}
+                    busy={skipping}
+                    onPress={skipPressed}
+                />
 
                 {/*Elapsed Time Readout*/}
-                <div className="text-[#FFFFFF] font-mono
-                border border-blue-500 bg-slate-500 rounded-full
-                w-[7.5cqmin] h-[7.5cqmin]
-                flex items-center justify-center
-                ">
-                    <span className="text-[1.6cqmin]">
+                <div className="flex items-center justify-center rounded-full font-hds-mono border
+                    bg-[var(--hds-palette-utility-fill)]
+                    border-[var(--hds-palette-utility-stroke)]
+                    text-[var(--hds-palette-utility-icon)]"
+                     style={{ width: TRANSPORT_SIZE, height: TRANSPORT_SIZE }}
+                     aria-live="off"
+                >
+                    <span className="text-[calc(1.6cqmin*var(--ui-scale,1))]">
                         {displayElapsedSeconds.toFixed(1)}s
                     </span>
                 </div>

@@ -1,1 +1,109 @@
+@layer theme, base, properties, uswds, hds-base, hds-components, hds-dataviz, components, utilities;
+
+/* NASA Horizon Design System (HDS) Core.*/
+@import "@nasa-hds/core/css";
+/* Data visualisation palettes */
+@import "@nasa-hds/core/css/dataviz";
 @import "tailwindcss";
+
+/* HDS design tokens surfaced as Tailwind utilities. */
+@theme static {
+    --color-nasa-red: var(--hds-color-nasa-red);
+    --color-nasa-red-tint: var(--hds-color-nasa-red-tint);
+    --color-nasa-red-shade: var(--hds-color-nasa-red-shade);
+    --color-nasa-blue: var(--hds-color-nasa-blue);
+    --color-nasa-blue-tint: var(--hds-color-nasa-blue-tint);
+    --color-nasa-blue-shade: var(--hds-color-nasa-blue-shade);
+    --color-international-orange: var(--hds-color-international-orange);
+    --color-active-green: var(--hds-color-active-green);
+    --color-carbon-05: var(--hds-color-carbon-05);
+    --color-carbon-10: var(--hds-color-carbon-10);
+    --color-carbon-20: var(--hds-color-carbon-20);
+    --color-carbon-30: var(--hds-color-carbon-30);
+    --color-carbon-40: var(--hds-color-carbon-40);
+    --color-carbon-50: var(--hds-color-carbon-50);
+    --color-carbon-60: var(--hds-color-carbon-60);
+    --color-carbon-70: var(--hds-color-carbon-70);
+    --color-carbon-80: var(--hds-color-carbon-80);
+    --color-carbon-90: var(--hds-color-carbon-90);
+    --color-carbon-black: var(--hds-color-carbon-black);
+    --color-spacesuit-white: var(--hds-color-spacesuit-white);
+    --color-dv-blue: var(--hds-dataviz-color-cat-1);      /* cat 1  */
+    --color-dv-red: var(--hds-dataviz-color-cat-2);       /* cat 2  */
+    --color-dv-orange: var(--hds-dataviz-color-cat-3);    /* cat 3  */
+    --color-dv-violet: var(--hds-dataviz-color-cat-9);    /* cat 9  */
+    --color-dv-amber: var(--hds-dataviz-color-cat-10);    /* cat 10 */
+    --color-dv-green: var(--hds-dataviz-color-cat-11);    /* cat 11 */
+    --color-dv-teal: var(--hds-dataviz-color-cat-12);     /* cat 12 */
+    --font-hds-heading: var(--hds-font-family-heading);
+    --font-hds-body: var(--hds-font-family-body);
+    --font-hds-mono: var(--hds-font-family-code);
+}
+
+@layer hds-components {
+    .usa-button:not(.usa-button--secondary):not(.usa-button--outline):not(.usa-button--unstyled) {
+        background-color: var(--hds-palette-btn-primary-bg, #f64137);
+    }
+    .usa-button:not(.usa-button--secondary):not(.usa-button--outline):not(.usa-button--unstyled):hover {
+        background-color: var(--hds-color-nasa-red-shade, #b60109);
+    }
+}
+
+.hds-palette-dark {
+    --color-dv-blue: var(--hds-dataviz-color-cat-1);
+    --color-dv-red: var(--hds-dataviz-color-cat-2);
+    --color-dv-orange: var(--hds-dataviz-color-cat-3);
+    --color-dv-violet: var(--hds-dataviz-color-cat-9);
+    --color-dv-amber: var(--hds-dataviz-color-cat-10);
+    --color-dv-green: var(--hds-dataviz-color-cat-11);
+    --color-dv-teal: var(--hds-dataviz-color-cat-12);
+}
+
+/* Fluid size modifier for HDS icon buttons.*/
+@layer hds-components {
+    .hds-btn-icon--fluid {
+        width: var(--hds-btn-icon-size);
+        height: var(--hds-btn-icon-size);
+    }
+
+    .hds-btn-icon--fluid:focus-visible::before {
+        --hds-btn-icon-ring: calc(var(--hds-btn-icon-size) + 0.8cqmin);
+
+        width: var(--hds-btn-icon-ring);
+        height: var(--hds-btn-icon-ring);
+        margin-top: calc(var(--hds-btn-icon-ring) / -2);
+        margin-left: calc(var(--hds-btn-icon-ring) / -2);
+        mask-size: 100% 100%;
+    }
+
+    /* Replaces the GSAP colour-and-scale hover the transport buttons used to run. */
+    .hds-btn-icon--fluid .hds-icon,
+    .hds-btn-icon--fluid .hds-btn-icon__text {
+        transition: transform 200ms ease-out;
+    }
+
+    .hds-btn-icon--fluid:hover:not(:disabled) .hds-icon,
+    .hds-btn-icon--fluid:hover:not(:disabled) .hds-btn-icon__text {
+        transform: scale(1.1);
+    }
+
+    /* Text sitting in a circle instead of a glyph, for the +30s control.*/
+    .hds-btn-icon__text {
+        font-family: var(--hds-font-family-code);
+        font-weight: 700;
+        line-height: 1;
+        pointer-events: none;
+    }
+}
+
+
+/* Outline buttons that sit on top of artwork rather than on the page surface. */
+@layer hds-components {
+    .hds-btn-on-art.usa-button--outline {
+        background-color: var(--hds-palette-utility-fill, #16161a);
+    }
+
+    .hds-btn-on-art.usa-button--outline:hover:not(:disabled):not([aria-disabled="true"]) {
+        background-color: var(--hds-color-carbon-80, #2e2e32);
+    }
+}
